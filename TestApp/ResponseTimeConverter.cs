@@ -162,7 +162,10 @@ namespace TestApp
 
                 sheet.Cells[row, col++].Value = r.Min;
                 sheet.Cells[row, col++].Value = r.Max;
-                sheet.Cells[row, col++].Value = r.ErrorPercent;
+
+                var errorCell = sheet.Cells[row, col++];
+                errorCell.Value = r.ErrorPercent / 100.0;
+                errorCell.Style.Numberformat.Format = "0.00%";
 
                 row++;
             }
