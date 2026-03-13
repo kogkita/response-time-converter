@@ -13,6 +13,7 @@ namespace TestApp
     public partial class MainWindow : Window
     {
         private readonly List<string> selectedFiles = new();
+        private readonly List<string> jtlSelectedFiles = new();
         private Button? activeNavButton;
 
         public MainWindow()
@@ -65,11 +66,15 @@ namespace TestApp
             activeNavButton = clicked;
 
             PageConvert.Visibility = Visibility.Collapsed;
+            PageJTL.Visibility = Visibility.Collapsed;
             page.Visibility = Visibility.Visible;
         }
 
         private void NavConvert_Click(object sender, RoutedEventArgs e)
             => SetActivePage(NavConvert, PageConvert);
+
+        private void NavJTL_Click(object sender, RoutedEventArgs e)
+            => SetActivePage(NavJTL, PageJTL);
 
         // ── File list helpers ────────────────────────────────
 
@@ -234,6 +239,168 @@ namespace TestApp
                 string msg = succeeded > 0
                     ? $"{succeeded} file(s) converted. {errors.Count} failed:\n\n{string.Join("\n", errors)}"
                     : $"All conversions failed:\n\n{string.Join("\n", errors)}";
+                MessageBox.Show(msg, "Completed with Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // ── JTL File Processing page ─────────────────────────
+
+        private void JTLAddFiles(IEnumerable<string> paths)
+        {
+            foreach (var path in paths)
+            {
+                var ext = Path.GetExtension(path).ToLowerInvariant();
+                if ((ext == ".jtl" || ext == ".csv" || ext == ".xml")
+                    && !jtlSelectedFiles.Contains(path))
+                {
+                    jtlSelectedFiles.Add(path);
+                }
+            }
+            JTLRefreshFileList();
+        }
+
+        private void JTLRefreshFileList()
+        {
+            JTLFileListPanel.Children.Clear();
+
+            foreach (var path in jtlSelectedFiles)
+            {
+                var row = new Grid { Margin = new Thickness(4, 2, 4, 2) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var label = new TextBlock
+                {
+                    Text = path,
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7DD3FC")),
+                    FontSize = 11.5,
+                    FontFamily = new FontFamily("Consolas, Segoe UI Mono, Segoe UI"),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    ToolTip = path
+                };
+                Grid.SetColumn(label, 0);
+
+                var capturedPath = path;
+                var removeBtn = new Button
+                {
+                    Width = 18,
+                    Height = 18,
+                    Content = "\uE711",
+                    FontSize = 10,
+                    FontFamily = new FontFamily("Segoe MDL2 Assets, Segoe UI"),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4A5568")),
+                    Cursor = Cursors.Hand,
+                    ToolTip = "Remove",
+                    Margin = new Thickness(6, 0, 2, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                removeBtn.Click += (_, _) =>
+                {
+                    jtlSelectedFiles.Remove(capturedPath);
+                    JTLRefreshFileList();
+                };
+                Grid.SetColumn(removeBtn, 1);
+
+                row.Children.Add(label);
+                row.Children.Add(removeBtn);
+                JTLFileListPanel.Children.Add(row);
+            }
+
+            int count = jtlSelectedFiles.Count;
+            JTLFileCountLabel.Text = count == 0
+                ? "No files selected"
+                : count == 1
+                    ? "1 file selected"
+                    : $"{count} files selected";
+
+            JTLClearAllButton.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void JTLBrowseFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "JTL / CSV Files (*.jtl;*.csv;*.xml)|*.jtl;*.csv;*.xml",
+                Multiselect = true
+            };
+            if (dialog.ShowDialog() == true)
+                JTLAddFiles(dialog.FileNames);
+        }
+
+        private void JTLClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            jtlSelectedFiles.Clear();
+            JTLRefreshFileList();
+        }
+
+        private void JTLFileDropped(object sender, DragEventArgs e)
+        {
+            JTLResetDropZone();
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                JTLAddFiles(files);
+            }
+        }
+
+        private void JTLDropZone_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                JTLDropZone.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB"));
+                JTLDropZone.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#111827"));
+            }
+        }
+
+        private void JTLDropZone_DragLeave(object sender, DragEventArgs e)
+            => JTLResetDropZone();
+
+        private void JTLResetDropZone()
+        {
+            JTLDropZone.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E2640"));
+            JTLDropZone.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0D1020"));
+        }
+
+        private void JTLRunProcessing_Click(object sender, RoutedEventArgs e)
+        {
+            if (jtlSelectedFiles.Count == 0)
+            {
+                MessageBox.Show("Please select or drop one or more JTL files first.",
+                    "No Files", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int succeeded = 0;
+            var errors = new List<string>();
+
+            foreach (var jtlPath in jtlSelectedFiles)
+            {
+                try
+                {
+                    var output = Path.ChangeExtension(jtlPath, ".xlsx");
+                    JTLFileProcessing.Process(jtlPath, output);
+                    succeeded++;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
+                }
+            }
+
+            if (errors.Count == 0)
+            {
+                string msg = succeeded == 1
+                    ? "Excel file created successfully."
+                    : $"{succeeded} Excel files created successfully.";
+                MessageBox.Show(msg, "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                string msg = succeeded > 0
+                    ? $"{succeeded} file(s) processed. {errors.Count} failed:\n\n{string.Join("\n", errors)}"
+                    : $"All processing failed:\n\n{string.Join("\n", errors)}";
                 MessageBox.Show(msg, "Completed with Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
