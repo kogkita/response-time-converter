@@ -31,14 +31,21 @@ namespace TestApp
             int lastRow = recordCount + 1;
 
             // ── Add one series per percentile column ──────────────────────────
-            for (int i = 0; i < percentileHeaders.Count; i++)
-            {
-                int col = percentileStartColumn + i;
-                var series = chart.Series.Add(
-                    dataSheet.Cells[2, col, lastRow, col],  // Y values
-                    dataSheet.Cells[2, 1, lastRow, 1]);   // X labels (transaction names)
+            // ── Add Average series (always column 3) ─────────────────────────
+            var avgSeries = chart.Series.Add(
+                dataSheet.Cells[2, 3, lastRow, 3],  // Average column
+                dataSheet.Cells[2, 1, lastRow, 1]); // X labels (transaction names)
+            avgSeries.Header = "Average";
 
-                series.Header = percentileHeaders[i].Replace("% Line", "");
+            // ── Add 90th percentile series only ──────────────────────────────
+            int p90Index = percentileHeaders.IndexOf("90% Line");
+            if (p90Index >= 0)
+            {
+                int p90Col = percentileStartColumn + p90Index;
+                var p90Series = chart.Series.Add(
+                    dataSheet.Cells[2, p90Col, lastRow, p90Col],  // 90th percentile column
+                    dataSheet.Cells[2, 1, lastRow, 1]);       // X labels (transaction names)
+                p90Series.Header = "90th Percentile";
             }
 
             // ── Outlier-resistant axis maximum ────────────────────────────────
@@ -68,8 +75,15 @@ namespace TestApp
         /// </summary>
         private static double? ComputeAxisMax(List<ResponseTimeRecord> records)
         {
+            // Only consider Average and 90th percentile values for axis scaling
             var allValues = records
-                .SelectMany(r => r.Percentiles.Values)
+                .SelectMany(r =>
+                {
+                    var vals = new List<double> { r.Average };
+                    if (r.Percentiles.TryGetValue("90% Line", out double p90))
+                        vals.Add(p90);
+                    return vals;
+                })
                 .Where(v => v > 0)
                 .OrderBy(v => v)
                 .ToList();
