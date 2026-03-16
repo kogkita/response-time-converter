@@ -631,7 +631,7 @@
             FontWeight="SemiBold"
             Width="180"
             Height="42"
-            Click="RunProcessing_Click"/>
+            Click="JTLRunProcessing_Click"/>
 
                                 <!-- Include Charts checkbox -->
                                 <Border Grid.Column="1"

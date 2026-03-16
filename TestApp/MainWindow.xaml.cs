@@ -399,14 +399,81 @@ namespace TestApp
 
         private void JTLRunProcessing_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("JTL File Processing is not yet implemented.",
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (jtlSelectedFiles.Count == 0)
+            {
+                MessageBox.Show("Please select or drop one or more JTL files first.",
+                    "No Files", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            bool club = JTLClubOutputCheckbox.IsChecked == true;
+            bool includeCharts = JTLIncludeChartsCheckbox.IsChecked == true;
+
+            if (club)
+            {
+                RunJTLClubbed(includeCharts);
+            }
+            else
+            {
+                int succeeded = 0;
+                var errors = new List<string>();
+
+                foreach (var jtlPath in jtlSelectedFiles)
+                {
+                    try
+                    {
+                        var output = Path.ChangeExtension(jtlPath, ".xlsx");
+                        JTLFileProcessing.Convert(jtlPath, output, includeCharts);
+                        succeeded++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
+                    }
+                }
+
+                ShowResult(succeeded, errors);
+            }
         }
 
-        private void RunJTLClubbed()
+        private void RunJTLClubbed(bool includeCharts)
         {
-            MessageBox.Show("JTL File Processing is not yet implemented.",
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            var dlg = new SaveFileDialog
+            {
+                Title = "Save Combined JTL Excel Workbook",
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx",
+                FileName = "JTLResults_Combined.xlsx"
+            };
+            if (dlg.ShowDialog() != true) return;
+
+            var errors = new List<string>();
+            int succeeded = 0;
+
+            ExcelPackage.License.SetNonCommercialPersonal("JTL File Processing");
+            using var package = new ExcelPackage();
+
+            foreach (var jtlPath in jtlSelectedFiles)
+            {
+                try
+                {
+                    string prefix = SanitizeSheetName(Path.GetFileNameWithoutExtension(jtlPath), 20);
+                    JTLFileProcessing.AppendToPackage(package, jtlPath, prefix, includeCharts);
+                    succeeded++;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
+                }
+            }
+
+            if (succeeded > 0)
+            {
+                package.SaveAs(new FileInfo(dlg.FileName));
+                if (includeCharts)
+                    JTLFileProcessing.InjectPendingCharts(dlg.FileName);
+            }
+
+            ShowResult(succeeded, errors, dlg.FileName);
         }
 
         // ── Shared helpers ───────────────────────────────────
