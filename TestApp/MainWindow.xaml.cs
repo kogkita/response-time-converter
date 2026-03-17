@@ -68,6 +68,8 @@ namespace TestApp
 
             PageConvert.Visibility = Visibility.Collapsed;
             PageJTL.Visibility = Visibility.Collapsed;
+            PageBLG.Visibility = Visibility.Collapsed;
+            PageNmon.Visibility = Visibility.Collapsed;
             page.Visibility = Visibility.Visible;
         }
 
@@ -76,6 +78,12 @@ namespace TestApp
 
         private void NavJTL_Click(object sender, RoutedEventArgs e)
             => SetActivePage(NavJTL, PageJTL);
+
+        private void NavBLG_Click(object sender, RoutedEventArgs e)
+            => SetActivePage(NavBLG, PageBLG);
+
+        private void NavNmon_Click(object sender, RoutedEventArgs e)
+            => SetActivePage(NavNmon, PageNmon);
 
         // ── File list helpers ────────────────────────────────
 
@@ -487,6 +495,337 @@ namespace TestApp
             var invalid = new[] { ':', '\\', '/', '?', '*', '[', ']' };
             foreach (var c in invalid) name = name.Replace(c, '_');
             return name.Length > maxLen ? name[..maxLen] : name;
+        }
+
+        // ── BLG File Conversion page ──────────────────────────
+
+        private readonly List<string> blgSelectedFiles = new();
+
+        private void BLGAddFiles(IEnumerable<string> paths)
+        {
+            foreach (var path in paths)
+            {
+                if (!path.EndsWith(".blg", StringComparison.OrdinalIgnoreCase)) continue;
+                if (blgSelectedFiles.Contains(path)) continue;
+
+                blgSelectedFiles.Add(path);
+
+                var row = new Grid { Margin = new Thickness(0, 2, 0, 2) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var lbl = new TextBlock
+                {
+                    Text = System.IO.Path.GetFileName(path),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1)),
+                    FontSize = 12,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(6, 0, 0, 0),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    ToolTip = path
+                };
+                Grid.SetColumn(lbl, 0);
+
+                var removeBtn = new Button
+                {
+                    Content = "\uE711",
+                    Style = (Style)Resources["RemoveButtonStyle"],
+                    Tag = path,
+                    Margin = new Thickness(4, 0, 4, 0)
+                };
+                removeBtn.Click += (s, _) =>
+                {
+                    var p = (string)((Button)s).Tag;
+                    blgSelectedFiles.Remove(p);
+                    BLGFileListPanel.Children.Remove(row);
+                    UpdateBLGUI();
+                };
+                Grid.SetColumn(removeBtn, 1);
+
+                row.Children.Add(lbl);
+                row.Children.Add(removeBtn);
+                BLGFileListPanel.Children.Add(row);
+            }
+            UpdateBLGUI();
+        }
+
+        private void UpdateBLGUI()
+        {
+            int count = blgSelectedFiles.Count;
+            BLGFileCountLabel.Text = count == 0
+                ? "No files selected"
+                : count == 1 ? "1 file selected" : $"{count} files selected";
+            BLGClearAllButton.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void BLGBrowseFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Title = "Select BLG file(s)",
+                Filter = "Performance Monitor Log (*.blg)|*.blg|All Files (*.*)|*.*",
+                Multiselect = true
+            };
+            if (dlg.ShowDialog() == true)
+                BLGAddFiles(dlg.FileNames);
+        }
+
+        private void BLGClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            blgSelectedFiles.Clear();
+            BLGFileListPanel.Children.Clear();
+            UpdateBLGUI();
+        }
+
+        private void BLGFileDropped(object sender, DragEventArgs e)
+        {
+            BLGDropZone.BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x26, 0x40));
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                BLGAddFiles((string[])e.Data.GetData(DataFormats.FileDrop));
+        }
+
+        private void BLGDropZone_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                BLGDropZone.BorderBrush = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB));
+        }
+
+        private void BLGDropZone_DragLeave(object sender, DragEventArgs e)
+            => BLGDropZone.BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x26, 0x40));
+
+        private void BLGRunProcessing_Click(object sender, RoutedEventArgs e)
+        {
+            if (blgSelectedFiles.Count == 0)
+            {
+                MessageBox.Show("Please select at least one .blg file.",
+                    "No Files Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // TODO: implement BLG conversion logic
+            MessageBox.Show(
+                "BLG conversion is not yet implemented.\n\nThis feature will process Windows Performance Monitor .blg files and export the counter data to Excel.",
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // ── nmon Analyzer page ────────────────────────────────
+
+        private readonly List<string> nmonSelectedFiles = new();
+
+        private void NmonAddFiles(IEnumerable<string> paths)
+        {
+            foreach (var path in paths)
+            {
+                string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+                if (ext != ".nmon" && ext != ".csv") continue;
+                if (nmonSelectedFiles.Contains(path)) continue;
+
+                nmonSelectedFiles.Add(path);
+
+                var row = new Grid { Margin = new Thickness(0, 2, 0, 2) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var lbl = new TextBlock
+                {
+                    Text = System.IO.Path.GetFileName(path),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1)),
+                    FontSize = 12,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(6, 0, 0, 0),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    ToolTip = path
+                };
+                Grid.SetColumn(lbl, 0);
+
+                var removeBtn = new Button
+                {
+                    Content = "\uE711",
+                    Style = (Style)Resources["RemoveButtonStyle"],
+                    Tag = path,
+                    Margin = new Thickness(4, 0, 4, 0)
+                };
+                removeBtn.Click += (s, _) =>
+                {
+                    var p = (string)((Button)s).Tag;
+                    nmonSelectedFiles.Remove(p);
+                    NmonFileListPanel.Children.Remove(row);
+                    UpdateNmonUI();
+                };
+                Grid.SetColumn(removeBtn, 1);
+
+                row.Children.Add(lbl);
+                row.Children.Add(removeBtn);
+                NmonFileListPanel.Children.Add(row);
+            }
+            UpdateNmonUI();
+        }
+
+        private void UpdateNmonUI()
+        {
+            int count = nmonSelectedFiles.Count;
+            NmonFileCountLabel.Text = count == 0 ? "No files selected"
+                : count == 1 ? "1 file selected" : $"{count} files selected";
+            NmonClearAllButton.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void NmonBrowseFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Title = "Select NMON file(s)",
+                Filter = "NMON files (*.nmon;*.csv)|*.nmon;*.csv|All Files (*.*)|*.*",
+                Multiselect = true
+            };
+            if (dlg.ShowDialog() == true) NmonAddFiles(dlg.FileNames);
+        }
+
+        private void NmonClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            nmonSelectedFiles.Clear();
+            NmonFileListPanel.Children.Clear();
+            UpdateNmonUI();
+        }
+
+        private void NmonFileDropped(object sender, DragEventArgs e)
+        {
+            NmonDropZone.BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x26, 0x40));
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                NmonAddFiles((string[])e.Data.GetData(DataFormats.FileDrop));
+        }
+
+        private void NmonDropZone_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                NmonDropZone.BorderBrush = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB));
+        }
+
+        private void NmonDropZone_DragLeave(object sender, DragEventArgs e)
+            => NmonDropZone.BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x26, 0x40));
+
+        private void NmonOutDirBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            // WPF has no native FolderBrowserDialog — use SaveFileDialog pointed at a folder
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Select output directory (type any filename, only the folder is used)",
+                Filter = "Folder|*.folder",
+                FileName = "Select Folder",
+                CheckFileExists = false,
+                CheckPathExists = true,
+                ValidateNames = false
+            };
+            if (dlg.ShowDialog() == true)
+                NmonOutDirBox.Text = System.IO.Path.GetDirectoryName(dlg.FileName) ?? string.Empty;
+        }
+
+        private void NmonXlsmBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Title = "Locate nmon_analyser_v69_2.xlsm",
+                Filter = "nmon Analyser (*.xlsm)|*.xlsm|All Files (*.*)|*.*"
+            };
+            if (dlg.ShowDialog() == true)
+                NmonXlsmPathBox.Text = dlg.FileName;
+        }
+
+        private void NmonRunAnalysis_Click(object sender, RoutedEventArgs e)
+        {
+            if (nmonSelectedFiles.Count == 0)
+            {
+                MessageBox.Show("Please select at least one .nmon file.",
+                    "No Files Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Resolve XLSM path — check box first, then app directory
+            string xlsmPath = NmonXlsmPathBox.Text.Trim();
+            if (string.IsNullOrEmpty(xlsmPath))
+            {
+                var appDir = System.IO.Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "";
+                var candidate = System.IO.Path.Combine(appDir, "nmon_analyser_v69_2.xlsm");
+                if (System.IO.File.Exists(candidate))
+                    xlsmPath = candidate;
+            }
+
+            if (!System.IO.File.Exists(xlsmPath))
+            {
+                MessageBox.Show(
+                    "Cannot find nmon_analyser_v69_2.xlsm.\n\n" +
+                    "Please browse to locate it using the 'Browse…' button, " +
+                    "or place it in the same folder as this application.",
+                    "XLSM Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                // Build options from UI
+                var opts = BuildNmonOptions(xlsmPath);
+
+                NmonStatusLabel.Text = "Running analysis… Excel will open in the background.";
+                NmonStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0xA5, 0xFA));
+
+                // Run on background thread so UI stays responsive
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    try
+                    {
+                        NmonAnalyzer.Run(opts);
+                        Dispatcher.Invoke(() =>
+                        {
+                            NmonStatusLabel.Text = "Analysis complete. Check the output directory for Excel files.";
+                            NmonStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
+                            MessageBox.Show("nmon analysis complete!\n\nExcel files saved to:\n" +
+                                (string.IsNullOrEmpty(opts.OutDir) ? "Same directory as each input file" : opts.OutDir),
+                                "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            NmonStatusLabel.Text = $"Error: {ex.Message}";
+                            NmonStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
+                            MessageBox.Show($"Analysis failed:\n\n{ex.Message}",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to start analysis:\n\n{ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private NmonAnalyzerOptions BuildNmonOptions(string xlsmPath)
+        {
+            // Parse GRAPHS combo: "ALL|CHARTS" etc.
+            var graphsTag = ((NmonGraphsCombo.SelectedItem as ComboBoxItem)?.Tag as string ?? "ALL|CHARTS")
+                .Split('|');
+
+            return new NmonAnalyzerOptions
+            {
+                XlsmPath = xlsmPath,
+                NmonFiles = nmonSelectedFiles.ToList(),
+                GraphsScope = graphsTag.Length > 0 ? graphsTag[0] : "ALL",
+                GraphsOutput = graphsTag.Length > 1 ? graphsTag[1] : "CHARTS",
+                Merge = (NmonMergeCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "NO",
+                IntervalFirst = NmonIntervalFirst.Text.Trim(),
+                IntervalLast = NmonIntervalLast.Text.Trim(),
+                Ess = NmonEssChk.IsChecked == true,
+                Scatter = NmonScatterChk.IsChecked == true,
+                BigData = NmonBigdataChk.IsChecked == true,
+                ShowLinuxCpuUtil = NmonLinuxCpuChk.IsChecked == true,
+                Reorder = NmonReorderChk.IsChecked == true,
+                SortDefault = NmonSortDefaultChk.IsChecked == true,
+                List = NmonListBox.Text.Trim(),
+                OutDir = NmonOutDirBox.Text.Trim(),
+            };
         }
 
         private static void ShowResult(int succeeded, List<string> errors, string? savedPath = null)
