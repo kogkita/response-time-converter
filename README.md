@@ -1,63 +1,125 @@
-# Response Time Converter
+# Performance Test Utilities
 
-## Project Description
-The Response Time Converter is a tool designed to facilitate the conversion of response times across various formats. Whether you are a developer testing APIs, a tech enthusiast, or just someone who wants to understand time better, this project aims to provide a user-friendly experience for converting and managing response times.
+A Windows desktop application for processing and analysing performance test data. Built with WPF (.NET 10) and EPPlus, it provides a dark-themed GUI with four tools covering the most common post-test analysis workflows.
 
-## Features
-- Convert between different response time formats (e.g., milliseconds, seconds, minutes)
-- User-friendly interface for quick conversions
-- Command-line interface (CLI) for advanced users
-- Support for both synchronous and asynchronous operations
-- Built-in testing suite to ensure accuracy
+---
 
-## Setup Instructions
-1. **Clone the repository**:  
-   ```bash
-   git clone https://github.com/kogkita/response-time-converter.git
-   ```  
-2. **Navigate to the project directory**:  
-   ```bash
-   cd response-time-converter
-   ```  
-3. **Install the required dependencies**:  
-   ```bash
-   npm install
-   ```  
-4. **Run the application**:  
-   ```bash
-   npm start
-   ```  
+## Tools
 
-## Usage Guide
-- For quick conversions, use the provided user interface.
-- For command-line usage, run the following command with the appropriate arguments:  
-   ```bash
-   node converter.js <time> <input_format> <output_format>
-   ```  
-- Example:
-   ```bash
-   node converter.js 1500 ms s
-   ```  
-This will convert 1500 milliseconds to seconds.
+### 1. Convert Response Times
+Imports one or more JMeter CSV (`.csv`) report files and exports formatted Excel workbooks with summary statistics.
 
-## Contribution Guidelines
-1. **Fork the repository**:  
-   Create your own copy of the repository to propose changes.
-2. **Create a new branch**:  
-   ```bash
-   git checkout -b feature/YourFeatureName
-   ```  
-3. **Make your changes**:  
-   Ensure your code follows the project’s coding standards and includes relevant tests.
-4. **Commit your changes**:  
-   ```bash
-   git commit -m "Add your message here"
-   ```  
-5. **Push to the branch**:  
-   ```bash
-   git push origin feature/YourFeatureName
-   ```  
-6. **Submit a pull request**:  
-   Describe your changes and why they should be merged.
+- Multiple files supported — each gets its own `.xlsx` output
+- Optional **Include Charts** — adds a latency chart sheet to the output
+- Optional **Club into one file** — merges all inputs into a single Excel workbook
 
-Thank you for considering contributing to the Response Time Converter project!
+### 2. JTL File Processing
+Imports one or more JMeter JTL (`.jtl`) result files and exports formatted Excel workbooks with summary stats and charts.
+
+- Supports `.jtl` JMeter result files (CSV-formatted JTL output)
+- Optional **Include Charts** and **Club into one file** options, same as above
+
+### 3. BLG File Conversion
+Converts Windows Performance Monitor binary log (`.blg`) files to CSV using `relog.exe`, applying a performance counter filter template.
+
+- **App Server template** — captures OS and process counters:
+  - `\Memory\Available MBytes`
+  - `\Memory\Pages Input/sec` / `Pages Output/sec`
+  - `\Network Interface(*)\Bytes Total/sec`
+  - `\PhysicalDisk(_Total)\% Idle Time`, `Avg. Disk sec/Transfer`, `Current Disk Queue Length`
+  - `\Paging File(_Total)\% Usage`
+  - `\Process(*)\% Processor Time`, `Working Set`
+  - `\Processor(_Total)\% Processor Time`
+  - `\PhysicalDisk(*)\*`
+
+- **DB Server template** — all App Server counters plus SQL Server-specific counters:
+  - `\SQLServer:Buffer Manager\Buffer cache hit ratio`
+  - `\SQLServer:Buffer Manager\Page life expectancy`
+  - `\SQLServer:General Statistics\User Connections`
+  - `\SQLServer:Latches\Average Latch Wait Time (ms)`
+  - `\SQLServer:Locks(_Total)\Average Wait Time (ms)`
+  - `\SQLServer:Locks(_Total)\Number of Deadlocks/sec`
+
+- **Custom counter file** — optionally supply your own `.txt` counter list to override the built-in template. One counter path per line; trailing whitespace and carriage returns are sanitised automatically.
+- **Command preview** — shows the exact `relog.exe` command that will be executed before you run it.
+- Requires `relog.exe` (ships with Windows, normally at `C:\Windows\System32\relog.exe`).
+
+### 4. nmon Analyzer
+Analyses NMON files (`.nmon`) using the `nmon_analyser_v69_2.xlsm` Excel macro engine.
+
+- Configurable options: GRAPHS, MERGE, INTERVALS, ESS, SCATTER, BIGDATA, SHOWLINUXCPUUTIL, REORDER, SORTDEFAULT, LIST
+- Custom output directory support
+- Runs Excel macro automation in the background; UI remains responsive
+
+---
+
+## Requirements
+
+- Windows 10 / 11
+- .NET 10 Runtime (Windows)
+- Microsoft Excel — required for nmon Analyzer only
+- `relog.exe` — present by default on all Windows installations; required for BLG conversion only
+- `nmon_analyser_v69_2.xlsm` — place alongside the executable or browse to locate it; required for nmon Analyzer only
+
+---
+
+## Setup
+
+### Running from the StandAloneExecutable folder
+1. Navigate to the `StandAloneExecutable` folder.
+2. Run `TestApp.exe`.
+3. No installation required — all dependencies are bundled.
+
+### Building from source
+1. Open `TestApp.slnx` in Visual Studio 2022 (v18+).
+2. Restore NuGet packages (EPPlus and Microsoft.Extensions).
+3. Build and run (`F5`).
+
+---
+
+## Usage
+
+### BLG File Conversion
+1. Navigate to **BLG File Conversion** in the sidebar.
+2. Select **App Server** or **DB Server** to use the built-in counter template, or browse for a **Custom Counter File** to override.
+3. Browse for `.blg` files or drag and drop them into the drop zone.
+4. Review the **Command Preview** to confirm the relog command.
+5. Click **Run Conversion** — CSV files are saved alongside each input `.blg` file.
+
+### Convert Response Times / JTL File Processing
+1. Navigate to the relevant tool in the sidebar.
+2. Browse or drag and drop your CSV / JTL files.
+3. Toggle **Include Charts** and/or **Club into one file** as needed.
+4. Click **Run Processing** — Excel files are saved alongside each input file (or to the chosen combined path).
+
+### nmon Analyzer
+1. Navigate to **nmon Analyzer** in the sidebar.
+2. Browse or drag and drop `.nmon` files.
+3. Configure analyser options (GRAPHS, MERGE, etc.).
+4. Set the path to `nmon_analyser_v69_2.xlsm`.
+5. Click **Run nmon Analyzer**.
+
+---
+
+## Project Structure
+
+```
+PerformanceAnalysisUtilities/
+├── TestApp/
+│   ├── MainWindow.xaml(.cs)               # Main UI and all page logic
+│   ├── BLGConverter.cs                    # relog.exe wrapper, counter templates
+│   ├── ResponseTimeConverter.cs           # JMeter CSV → Excel
+│   ├── ResponseTimeConverterExcelCharts.cs
+│   ├── JTLFileProcessing.cs               # JTL → Excel
+│   ├── JTLFileProcessingExcelCharts.cs
+│   └── NmonAnalyzer.cs                    # nmon_analyser Excel automation
+├── StandAloneExecutable/                  # Pre-built binaries + dependencies
+├── README.md
+└── CONTRIBUTING.md
+```
+
+---
+
+## License
+
+See [LICENSE](LICENSE) for details.

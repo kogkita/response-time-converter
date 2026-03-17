@@ -298,11 +298,9 @@ namespace TestApp
             foreach (var path in paths)
             {
                 var ext = Path.GetExtension(path).ToLowerInvariant();
-                if ((ext == ".jtl" || ext == ".csv" || ext == ".xml")
-                    && !jtlSelectedFiles.Contains(path))
-                {
-                    jtlSelectedFiles.Add(path);
-                }
+                if (ext != ".jtl") continue;
+                if (jtlSelectedFiles.Contains(path)) continue;
+                jtlSelectedFiles.Add(path);
             }
             JTLRefreshFileList();
         }
@@ -371,7 +369,7 @@ namespace TestApp
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "JTL / CSV Files (*.jtl;*.csv;*.xml)|*.jtl;*.csv;*.xml",
+                Filter = "JTL Files (*.jtl)|*.jtl",
                 Multiselect = true
             };
             if (dialog.ShowDialog() == true)
