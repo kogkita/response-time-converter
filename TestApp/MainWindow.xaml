@@ -296,6 +296,15 @@
                                     <TextBlock Text="nmon Analyzer" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
+
+                            <Button x:Name="NavCompare"
+                                    Style="{StaticResource NavButtonStyle}"
+                                    Click="NavCompare_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#x21C4;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Run Comparison" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
 
                         <TextBlock DockPanel.Dock="Bottom"
@@ -701,160 +710,160 @@
                     <!-- ═══════════════ BLG FILE CONVERSION PAGE ═══════════════ -->
                     <Grid x:Name="PageBLG" Visibility="Collapsed">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <Grid Margin="36,28,36,28">
-                            <Grid.RowDefinitions>
-                                <!-- Heading -->
-                                <RowDefinition Height="Auto"/>
-                                <!-- Browse row -->
-                                <RowDefinition Height="Auto"/>
-                                <!-- File list -->
-                                <RowDefinition Height="Auto"/>
-                                <!-- Server type + counter options panel -->
-                                <RowDefinition Height="Auto"/>
-                                <!-- Command preview -->
-                                <RowDefinition Height="Auto"/>
-                                <!-- Drop zone -->
-                                <RowDefinition Height="Auto" MinHeight="120"/>
-                                <!-- Run button -->
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                            <Grid Margin="36,28,36,28">
+                                <Grid.RowDefinitions>
+                                    <!-- Heading -->
+                                    <RowDefinition Height="Auto"/>
+                                    <!-- Browse row -->
+                                    <RowDefinition Height="Auto"/>
+                                    <!-- File list -->
+                                    <RowDefinition Height="Auto"/>
+                                    <!-- Server type + counter options panel -->
+                                    <RowDefinition Height="Auto"/>
+                                    <!-- Command preview -->
+                                    <RowDefinition Height="Auto"/>
+                                    <!-- Drop zone -->
+                                    <RowDefinition Height="Auto" MinHeight="120"/>
+                                    <!-- Run button -->
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                            <!-- Heading -->
-                            <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                                <TextBlock Text="BLG File Conversion"
+                                <!-- Heading -->
+                                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                                    <TextBlock Text="BLG File Conversion"
                                            FontSize="21" FontWeight="SemiBold"
                                            Foreground="#E2E8F0"
                                            FontFamily="Segoe UI Variable, Segoe UI"/>
-                                <TextBlock Text="Convert Windows Performance Monitor .blg files to CSV using relog.exe"
+                                    <TextBlock Text="Convert Windows Performance Monitor .blg files to CSV using relog.exe"
                                            FontSize="12.5" Foreground="#4A5568"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            Margin="0,4,0,0" TextWrapping="Wrap"/>
-                            </StackPanel>
+                                </StackPanel>
 
-                            <!-- Browse row -->
-                            <Grid Grid.Row="1" Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#0A0D18" BorderBrush="#1A2030"
+                                <!-- Browse row -->
+                                <Grid Grid.Row="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#0A0D18" BorderBrush="#1A2030"
                                         BorderThickness="1" CornerRadius="6" Height="40">
-                                    <TextBlock x:Name="BLGFileCountLabel" Text="No files selected"
+                                        <TextBlock x:Name="BLGFileCountLabel" Text="No files selected"
                                                Foreground="#8B93A5" FontSize="12"
                                                FontFamily="Segoe UI Variable, Segoe UI"
                                                VerticalAlignment="Center" Padding="12,0"/>
-                                </Border>
-                                <Button Grid.Column="1" Content="Browse…"
+                                    </Border>
+                                    <Button Grid.Column="1" Content="Browse…"
                                         Style="{StaticResource ActionButtonStyle}"
                                         Background="#2563EB" Foreground="White"
                                         FontSize="13" FontWeight="SemiBold"
                                         Width="96" Height="40" Margin="10,0,0,0"
                                         Click="BLGBrowseFile_Click"/>
-                                <Button x:Name="BLGClearAllButton" Grid.Column="2"
+                                    <Button x:Name="BLGClearAllButton" Grid.Column="2"
                                         Content="Clear All"
                                         Style="{StaticResource ActionButtonStyle}"
                                         Background="#374151" Foreground="#9CA3AF"
                                         FontSize="12" Width="80" Height="40"
                                         Margin="8,0,0,0" Visibility="Collapsed"
                                         Click="BLGClearAll_Click"/>
-                            </Grid>
+                                </Grid>
 
-                            <!-- Selected file list -->
-                            <Border Grid.Row="2" Background="#0A0D18" BorderBrush="#1A2030"
+                                <!-- Selected file list -->
+                                <Border Grid.Row="2" Background="#0A0D18" BorderBrush="#1A2030"
                                     BorderThickness="1" CornerRadius="8"
                                     MaxHeight="140" Margin="0,0,0,12" Padding="4">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <StackPanel x:Name="BLGFileListPanel" Margin="2"/>
-                                </ScrollViewer>
-                            </Border>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="BLGFileListPanel" Margin="2"/>
+                                    </ScrollViewer>
+                                </Border>
 
-                            <!-- ── Options panel ── -->
-                            <Border Grid.Row="3" Background="#0D1020" BorderBrush="#1A2030"
+                                <!-- ── Options panel ── -->
+                                <Border Grid.Row="3" Background="#0D1020" BorderBrush="#1A2030"
                                     BorderThickness="1" CornerRadius="8"
                                     Padding="16,14" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="CONVERSION OPTIONS"
+                                    <StackPanel>
+                                        <TextBlock Text="CONVERSION OPTIONS"
                                                FontSize="10" FontWeight="Bold" Foreground="#3D4560"
                                                FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,12"/>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="16"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="16"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <!-- LEFT: Server type -->
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="SERVER TYPE" Foreground="#8B93A5" FontSize="11"
+                                            <!-- LEFT: Server type -->
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="SERVER TYPE" Foreground="#8B93A5" FontSize="11"
                                                        FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,8"/>
 
-                                            <Border Background="#161B2A" BorderBrush="#252D42"
+                                                <Border Background="#161B2A" BorderBrush="#252D42"
                                                     BorderThickness="1" CornerRadius="6" Padding="12,10">
-                                                <StackPanel>
-                                                    <!-- App Server -->
-                                                    <RadioButton x:Name="BLGRadioApp"
+                                                    <StackPanel>
+                                                        <!-- App Server -->
+                                                        <RadioButton x:Name="BLGRadioApp"
                                                                  GroupName="BLGServerType"
                                                                  IsChecked="True"
                                                                  Foreground="#CBD5E1" FontSize="12.5"
                                                                  FontFamily="Segoe UI Variable, Segoe UI"
                                                                  Cursor="Hand" Margin="0,0,0,8"
                                                                  Checked="BLGServerType_Changed">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="App Server" Foreground="#CBD5E1" FontSize="12.5"/>
-                                                            <TextBlock Text="  — OS + process counters" Foreground="#3D4560" FontSize="11" VerticalAlignment="Center"/>
-                                                        </StackPanel>
-                                                    </RadioButton>
-                                                    <!-- DB Server -->
-                                                    <RadioButton x:Name="BLGRadioDb"
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="App Server" Foreground="#CBD5E1" FontSize="12.5"/>
+                                                                <TextBlock Text="  — OS + process counters" Foreground="#3D4560" FontSize="11" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </RadioButton>
+                                                        <!-- DB Server -->
+                                                        <RadioButton x:Name="BLGRadioDb"
                                                                  GroupName="BLGServerType"
                                                                  Foreground="#CBD5E1" FontSize="12.5"
                                                                  FontFamily="Segoe UI Variable, Segoe UI"
                                                                  Cursor="Hand"
                                                                  Checked="BLGServerType_Changed">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="DB Server" Foreground="#CBD5E1" FontSize="12.5"/>
-                                                            <TextBlock Text="  — OS + SQL Server counters" Foreground="#3D4560" FontSize="11" VerticalAlignment="Center"/>
-                                                        </StackPanel>
-                                                    </RadioButton>
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
-
-                                        <!-- RIGHT: Custom counter file override -->
-                                        <StackPanel Grid.Column="2">
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                <TextBlock Text="CUSTOM COUNTER FILE" Foreground="#8B93A5" FontSize="11"
-                                                           FontFamily="Segoe UI Variable, Segoe UI"
-                                                           VerticalAlignment="Center"/>
-                                                <TextBlock Text="  (optional — overrides server type template)"
-                                                           Foreground="#3D4560" FontSize="10"
-                                                           VerticalAlignment="Center"/>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="DB Server" Foreground="#CBD5E1" FontSize="12.5"/>
+                                                                <TextBlock Text="  — OS + SQL Server counters" Foreground="#3D4560" FontSize="11" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </RadioButton>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
 
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                            <!-- RIGHT: Custom counter file override -->
+                                            <StackPanel Grid.Column="2">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <TextBlock Text="CUSTOM COUNTER FILE" Foreground="#8B93A5" FontSize="11"
+                                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                                           VerticalAlignment="Center"/>
+                                                    <TextBlock Text="  (optional — overrides server type template)"
+                                                           Foreground="#3D4560" FontSize="10"
+                                                           VerticalAlignment="Center"/>
+                                                </StackPanel>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
                                                         BorderThickness="1" CornerRadius="6" Height="36">
-                                                    <TextBlock x:Name="BLGCounterFileLabel"
+                                                        <TextBlock x:Name="BLGCounterFileLabel"
                                                                Text="Using default template"
                                                                Foreground="#4A5568" FontSize="11.5"
                                                                FontFamily="Consolas, Segoe UI Mono"
                                                                VerticalAlignment="Center" Padding="10,0"
                                                                TextTrimming="CharacterEllipsis"/>
-                                                </Border>
-                                                <Button Grid.Column="1" Content="Browse…"
+                                                    </Border>
+                                                    <Button Grid.Column="1" Content="Browse…"
                                                         Style="{StaticResource ActionButtonStyle}"
                                                         Background="#374151" Foreground="#9CA3AF"
                                                         FontSize="12" Width="80" Height="36"
                                                         Margin="8,0,0,0"
                                                         Click="BLGCounterFileBrowse_Click"/>
-                                                <Button x:Name="BLGCounterFileClearBtn" Grid.Column="2"
+                                                    <Button x:Name="BLGCounterFileClearBtn" Grid.Column="2"
                                                         Content="✕"
                                                         Style="{StaticResource ActionButtonStyle}"
                                                         Background="#3D1F1F" Foreground="#F87171"
@@ -862,48 +871,48 @@
                                                         Margin="6,0,0,0" Visibility="Collapsed"
                                                         Click="BLGCounterFileClear_Click"
                                                         ToolTip="Remove custom counter file — revert to default template"/>
-                                            </Grid>
+                                                </Grid>
 
-                                            <!-- Counter preview list -->
-                                            <Border Background="#0A0D14" BorderBrush="#1A2030"
+                                                <!-- Counter preview list -->
+                                                <Border Background="#0A0D14" BorderBrush="#1A2030"
                                                     BorderThickness="1" CornerRadius="6"
                                                     MaxHeight="80" Margin="0,8,0,0" Padding="2">
-                                                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                                    <ItemsControl x:Name="BLGCounterPreviewList" Margin="6,4">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding}"
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                        <ItemsControl x:Name="BLGCounterPreviewList" Margin="6,4">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding}"
                                                                            Foreground="#4A6080"
                                                                            FontSize="10.5"
                                                                            FontFamily="Consolas, Segoe UI Mono"/>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </ScrollViewer>
-                                            </Border>
-                                        </StackPanel>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
 
-                            <!-- ── Command preview ── -->
-                            <Border Grid.Row="4" Background="#060810" BorderBrush="#1A2030"
+                                <!-- ── Command preview ── -->
+                                <Border Grid.Row="4" Background="#060810" BorderBrush="#1A2030"
                                     BorderThickness="1" CornerRadius="8"
                                     Padding="14,10" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="COMMAND PREVIEW"
+                                    <StackPanel>
+                                        <TextBlock Text="COMMAND PREVIEW"
                                                FontSize="10" FontWeight="Bold" Foreground="#3D4560"
                                                FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,6"/>
-                                    <TextBlock x:Name="BLGCommandPreview"
+                                        <TextBlock x:Name="BLGCommandPreview"
                                                Text="relog &quot;&lt;file.blg&gt;&quot; -cf &quot;detailed_counters.txt&quot; -f CSV -o &quot;&lt;file&gt;.csv&quot;"
                                                Foreground="#4ADE80" FontSize="11.5"
                                                FontFamily="Consolas, Segoe UI Mono"
                                                TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
+                                    </StackPanel>
+                                </Border>
 
-                            <!-- Drop zone -->
-                            <Border Grid.Row="5"
+                                <!-- Drop zone -->
+                                <Border Grid.Row="5"
                                     x:Name="BLGDropZone" AllowDrop="True"
                                     Drop="BLGFileDropped"
                                     DragEnter="BLGDropZone_DragEnter"
@@ -911,44 +920,44 @@
                                     Background="#0D1020" BorderBrush="#1E2640"
                                     BorderThickness="1.5" CornerRadius="10"
                                     MinHeight="120" Margin="0,0,0,0">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock Text="&#x2B07;" FontSize="28"
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="&#x2B07;" FontSize="28"
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,8" Foreground="#2D3A5A"/>
-                                    <TextBlock Text="Drag &amp; drop BLG files here"
+                                        <TextBlock Text="Drag &amp; drop BLG files here"
                                                FontSize="14" FontWeight="SemiBold" Foreground="#3D4D70"
                                                HorizontalAlignment="Center"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
-                                    <TextBlock Text="Accepts .blg Windows Performance Monitor binary log files"
+                                        <TextBlock Text="Accepts .blg Windows Performance Monitor binary log files"
                                                FontSize="11.5" Foreground="#252D42"
                                                HorizontalAlignment="Center" Margin="0,5,0,0"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
-                                </StackPanel>
-                            </Border>
+                                    </StackPanel>
+                                </Border>
 
-                            <!-- Run button row -->
-                            <Grid Grid.Row="6" Margin="0,16,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0"
+                                <!-- Run button row -->
+                                <Grid Grid.Row="6" Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0"
                                         Content="Run Conversion"
                                         Style="{StaticResource ActionButtonStyle}"
                                         Background="#16A34A" Foreground="White"
                                         FontSize="14" FontWeight="SemiBold"
                                         Width="180" Height="42"
                                         Click="BLGRunProcessing_Click"/>
-                                <TextBlock Grid.Column="1"
+                                    <TextBlock Grid.Column="1"
                                            x:Name="BLGStatusLabel"
                                            Text=""
                                            Foreground="#4A5568" FontSize="12"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            VerticalAlignment="Center" Margin="16,0,0,0"
                                            TextWrapping="Wrap"/>
-                            </Grid>
+                                </Grid>
 
-                        </Grid>
+                            </Grid>
                         </ScrollViewer>
                     </Grid>
 
@@ -1230,6 +1239,180 @@
 
                             </Grid>
                         </ScrollViewer>
+                    </Grid>
+
+                    <!-- ══ RUN COMPARISON PAGE ══ -->
+                    <Grid x:Name="PageCompare" Visibility="Collapsed">
+                        <Grid Margin="36,28,36,28">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Heading -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                                <TextBlock Text="Run Comparison"
+                                           FontSize="21" FontWeight="SemiBold"
+                                           Foreground="#E2E8F0"
+                                           FontFamily="Segoe UI Variable, Segoe UI"/>
+                                <TextBlock Text="Load a baseline and a current run (CSV or JTL) and export a delta report showing regressions, improvements, and SLA breaches."
+                                           FontSize="12.5" Foreground="#4A5568"
+                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                           Margin="0,5,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <!-- File pickers -->
+                            <Grid Grid.Row="1" Margin="0,0,0,16">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="12"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Baseline -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Baseline"
+                                               Foreground="#8B93A5" FontSize="12.5"
+                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                               VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1"
+                                            Background="#161B2A" BorderBrush="#252D42"
+                                            BorderThickness="1" CornerRadius="6" Height="40">
+                                        <TextBlock x:Name="CmpBaselineLabel"
+                                                   Text="No file selected"
+                                                   Foreground="#8B93A5" FontSize="12"
+                                                   FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                                   VerticalAlignment="Center" Padding="12,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </Border>
+                                    <Button Grid.Column="2" Content="Browse…"
+                                            Style="{StaticResource ActionButtonStyle}"
+                                            Background="#2563EB" Foreground="White"
+                                            FontSize="13" FontWeight="SemiBold"
+                                            Width="90" Height="40" Margin="10,0,0,0"
+                                            Click="CmpBrowseBaseline_Click"/>
+                                    <Button Grid.Column="3" x:Name="CmpClearBaselineBtn"
+                                            Content="Clear"
+                                            Style="{StaticResource ActionButtonStyle}"
+                                            Background="#374151" Foreground="#9CA3AF"
+                                            FontSize="12" Width="60" Height="40"
+                                            Margin="8,0,0,0" Visibility="Collapsed"
+                                            Click="CmpClearBaseline_Click"/>
+                                </Grid>
+
+                                <!-- Current -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Current"
+                                               Foreground="#8B93A5" FontSize="12.5"
+                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                               VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1"
+                                            Background="#161B2A" BorderBrush="#252D42"
+                                            BorderThickness="1" CornerRadius="6" Height="40">
+                                        <TextBlock x:Name="CmpCurrentLabel"
+                                                   Text="No file selected"
+                                                   Foreground="#8B93A5" FontSize="12"
+                                                   FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                                   VerticalAlignment="Center" Padding="12,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </Border>
+                                    <Button Grid.Column="2" Content="Browse…"
+                                            Style="{StaticResource ActionButtonStyle}"
+                                            Background="#2563EB" Foreground="White"
+                                            FontSize="13" FontWeight="SemiBold"
+                                            Width="90" Height="40" Margin="10,0,0,0"
+                                            Click="CmpBrowseCurrent_Click"/>
+                                    <Button Grid.Column="3" x:Name="CmpClearCurrentBtn"
+                                            Content="Clear"
+                                            Style="{StaticResource ActionButtonStyle}"
+                                            Background="#374151" Foreground="#9CA3AF"
+                                            FontSize="12" Width="60" Height="40"
+                                            Margin="8,0,0,0" Visibility="Collapsed"
+                                            Click="CmpClearCurrent_Click"/>
+                                </Grid>
+                            </Grid>
+
+                            <!-- Options row -->
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- File type selector -->
+                                <Border Grid.Column="0"
+                                        Background="#161B2A" BorderBrush="#252D42"
+                                        BorderThickness="1" CornerRadius="6"
+                                        Height="42" Padding="14,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="File type "
+                                                   Foreground="#8B93A5" FontSize="12.5"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center"/>
+                                        <RadioButton x:Name="CmpTypeCsv" Content="CSV" IsChecked="True"
+                                                     Foreground="#8B93A5" FontSize="12.5"
+                                                     FontFamily="Segoe UI Variable, Segoe UI"
+                                                     Margin="8,0,0,0" VerticalAlignment="Center" Cursor="Hand"/>
+                                        <RadioButton x:Name="CmpTypeJtl" Content="JTL" IsChecked="False"
+                                                     Foreground="#8B93A5" FontSize="12.5"
+                                                     FontFamily="Segoe UI Variable, Segoe UI"
+                                                     Margin="10,0,0,0" VerticalAlignment="Center" Cursor="Hand"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- SLA threshold -->
+                                <Border Grid.Column="1"
+                                        Background="#161B2A" BorderBrush="#252D42"
+                                        BorderThickness="1" CornerRadius="6"
+                                        Height="42" Padding="14,0" Margin="12,0,0,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="SLA threshold (ms) "
+                                                   Foreground="#8B93A5" FontSize="12.5"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBox x:Name="CmpSlaTextBox"
+                                                 Text="" Width="70" Height="28"
+                                                 Background="#0F1117" Foreground="#E2E8F0"
+                                                 BorderBrush="#2A2F3E" CaretBrush="#E2E8F0"
+                                                 FontSize="12.5"
+                                                 FontFamily="Segoe UI Variable, Segoe UI"
+                                                 VerticalContentAlignment="Center"
+                                                 Padding="6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text=" — leave blank to skip"
+                                                   Foreground="#3D4560" FontSize="11.5"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Run button -->
+                            <Grid Grid.Row="4" Margin="0,16,0,0">
+                                <Button Content="Run Comparison"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        Background="#7C3AED" Foreground="White"
+                                        FontSize="14" FontWeight="SemiBold"
+                                        Width="190" Height="42"
+                                        HorizontalAlignment="Left"
+                                        Click="CmpRun_Click"/>
+                            </Grid>
+                        </Grid>
                     </Grid>
 
                 </Grid>

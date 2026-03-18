@@ -73,6 +73,7 @@ namespace TestApp
             PageJTL.Visibility = Visibility.Collapsed;
             PageBLG.Visibility = Visibility.Collapsed;
             PageNmon.Visibility = Visibility.Collapsed;
+            PageCompare.Visibility = Visibility.Collapsed;
             page.Visibility = Visibility.Visible;
         }
 
@@ -87,6 +88,9 @@ namespace TestApp
 
         private void NavNmon_Click(object sender, RoutedEventArgs e)
             => SetActivePage(NavNmon, PageNmon);
+
+        private void NavCompare_Click(object sender, RoutedEventArgs e)
+            => SetActivePage(NavCompare, PageCompare);
 
         // ── File list helpers ────────────────────────────────
 
@@ -721,6 +725,8 @@ namespace TestApp
         // ── nmon Analyzer page ────────────────────────────────
 
         private readonly List<string> nmonSelectedFiles = new();
+        private string? cmpBaselinePath = null;
+        private string? cmpCurrentPath = null;
 
         private void NmonAddFiles(IEnumerable<string> paths)
         {
@@ -955,6 +961,127 @@ namespace TestApp
                     ? $"{succeeded} file(s) processed. {errors.Count} failed:\n\n{string.Join("\n", errors)}"
                     : $"All processing failed:\n\n{string.Join("\n", errors)}";
                 MessageBox.Show(msg, "Completed with Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // ── Run Comparison page ──────────────────────────────
+
+        private void CmpBrowseBaseline_Click(object sender, RoutedEventArgs e)
+        {
+            bool jtl = CmpTypeJtl.IsChecked == true;
+            var dlg = new OpenFileDialog
+            {
+                Title = "Select Baseline File",
+                Filter = jtl
+                    ? "JTL Files (*.jtl)|*.jtl|All Files (*.*)|*.*"
+                    : "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+            };
+            if (dlg.ShowDialog() != true) return;
+            cmpBaselinePath = dlg.FileName;
+            CmpBaselineLabel.Text = dlg.FileName;
+            CmpBaselineLabel.Foreground = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString("#7DD3FC"));
+            CmpClearBaselineBtn.Visibility = Visibility.Visible;
+        }
+
+        private void CmpClearBaseline_Click(object sender, RoutedEventArgs e)
+        {
+            cmpBaselinePath = null;
+            CmpBaselineLabel.Text = "No file selected";
+            CmpBaselineLabel.Foreground = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString("#8B93A5"));
+            CmpClearBaselineBtn.Visibility = Visibility.Collapsed;
+        }
+
+        private void CmpBrowseCurrent_Click(object sender, RoutedEventArgs e)
+        {
+            bool jtl = CmpTypeJtl.IsChecked == true;
+            var dlg = new OpenFileDialog
+            {
+                Title = "Select Current Run File",
+                Filter = jtl
+                    ? "JTL Files (*.jtl)|*.jtl|All Files (*.*)|*.*"
+                    : "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+            };
+            if (dlg.ShowDialog() != true) return;
+            cmpCurrentPath = dlg.FileName;
+            CmpCurrentLabel.Text = dlg.FileName;
+            CmpCurrentLabel.Foreground = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString("#7DD3FC"));
+            CmpClearCurrentBtn.Visibility = Visibility.Visible;
+        }
+
+        private void CmpClearCurrent_Click(object sender, RoutedEventArgs e)
+        {
+            cmpCurrentPath = null;
+            CmpCurrentLabel.Text = "No file selected";
+            CmpCurrentLabel.Foreground = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString("#8B93A5"));
+            CmpClearCurrentBtn.Visibility = Visibility.Collapsed;
+        }
+
+        private void CmpRun_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(cmpBaselinePath) || !File.Exists(cmpBaselinePath))
+            {
+                MessageBox.Show("Please select a valid baseline file.",
+                    "Missing File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (string.IsNullOrEmpty(cmpCurrentPath) || !File.Exists(cmpCurrentPath))
+            {
+                MessageBox.Show("Please select a valid current run file.",
+                    "Missing File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            double slaMs = 0;
+            string slaText = CmpSlaTextBox.Text.Trim();
+            if (!string.IsNullOrEmpty(slaText))
+            {
+                if (!double.TryParse(slaText,
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out slaMs) || slaMs <= 0)
+                {
+                    MessageBox.Show("SLA threshold must be a positive number (milliseconds).",
+                        "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+
+            var baseNoExt = Path.GetFileNameWithoutExtension(cmpBaselinePath);
+            var curNoExt = Path.GetFileNameWithoutExtension(cmpCurrentPath);
+            var saveDlg = new SaveFileDialog
+            {
+                Title = "Save Comparison Report",
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx",
+                FileName = $"Comparison_{baseNoExt}_vs_{curNoExt}.xlsx"
+            };
+            if (saveDlg.ShowDialog() != true) return;
+
+            var fileType = CmpTypeJtl.IsChecked == true
+                ? ComparisonFileType.Jtl
+                : ComparisonFileType.Csv;
+
+            try
+            {
+                RunComparisonProcessor.Compare(
+                    cmpBaselinePath,
+                    cmpCurrentPath,
+                    saveDlg.FileName,
+                    fileType,
+                    slaMs);
+
+                MessageBox.Show(
+                    $"Comparison report saved to:\n{saveDlg.FileName}",
+                    "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Comparison failed:\n\n{ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
