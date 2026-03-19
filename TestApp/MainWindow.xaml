@@ -1320,18 +1320,16 @@
                                         BorderThickness="1" CornerRadius="6"
                                         Height="42" Padding="14,0">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="File type "
+                                        <TextBlock Text="File type  "
                                                    Foreground="#8B93A5" FontSize="12.5"
                                                    FontFamily="Segoe UI Variable, Segoe UI"
                                                    VerticalAlignment="Center"/>
-                                        <RadioButton x:Name="CmpTypeCsv" Content="CSV" IsChecked="True"
-                                                     Foreground="#8B93A5" FontSize="12.5"
-                                                     FontFamily="Segoe UI Variable, Segoe UI"
-                                                     Margin="8,0,0,0" VerticalAlignment="Center" Cursor="Hand"/>
-                                        <RadioButton x:Name="CmpTypeJtl" Content="JTL" IsChecked="False"
-                                                     Foreground="#8B93A5" FontSize="12.5"
-                                                     FontFamily="Segoe UI Variable, Segoe UI"
-                                                     Margin="10,0,0,0" VerticalAlignment="Center" Cursor="Hand"/>
+                                        <TextBlock x:Name="CmpFileTypeLabel"
+                                                   Text="No files selected"
+                                                   Foreground="#7DD3FC" FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
 

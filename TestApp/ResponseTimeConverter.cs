@@ -90,12 +90,26 @@ namespace TestApp
         private static readonly Dictionary<string, (List<ResponseTimeRecord> records, ExcelPackage pkg)>
             _pendingCharts = new();
 
+        /// <summary>
+        /// Clears any stale pending chart data.  Should be called at the
+        /// start of a clubbed-mode run to avoid leaking data from a previous
+        /// run that may have failed before <see cref="InjectPendingCharts"/>
+        /// was reached.
+        /// </summary>
+        public static void ClearPendingCharts() => _pendingCharts.Clear();
+
         /// <summary>Called by MainWindow after SaveAs in clubbed mode.</summary>
         public static void InjectPendingCharts(string xlsxPath)
         {
-            foreach (var kvp in _pendingCharts)
-                ResponseTimeConverterExcelCharts.InjectChartForSheet(xlsxPath, kvp.Key, kvp.Value.records);
-            _pendingCharts.Clear();
+            try
+            {
+                foreach (var kvp in _pendingCharts)
+                    ResponseTimeConverterExcelCharts.InjectChartForSheet(xlsxPath, kvp.Key, kvp.Value.records);
+            }
+            finally
+            {
+                _pendingCharts.Clear();
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -153,7 +167,7 @@ namespace TestApp
                 throw new FileNotFoundException("CSV file not found", csvPath);
 
             var lines = File.ReadAllLines(csvPath);
-            var headers = lines[0].Split(',');
+            var headers = SplitCsvLine(lines[0]);
 
             // ── Column indices ────────────────────────────────────────────────
             int labelIndex = Array.IndexOf(headers, "Label");
@@ -163,6 +177,11 @@ namespace TestApp
             int minIndex = Array.IndexOf(headers, "Min");
             int maxIndex = Array.IndexOf(headers, "Max");
             int errIndex = Array.IndexOf(headers, "Error %");
+
+            if (labelIndex < 0 || sampleIndex < 0 || avgIndex < 0 ||
+                medianIndex < 0 || minIndex < 0 || maxIndex < 0 || errIndex < 0)
+                throw new InvalidDataException(
+                    "CSV file is missing one or more required columns (Label, # Samples, Average, Median, Min, Max, Error %).");
 
             var percentileIndexes = new List<int>();
             for (int i = 0; i < headers.Length; i++)
@@ -177,7 +196,9 @@ namespace TestApp
             // ── Data rows ─────────────────────────────────────────────────────
             for (int i = 1; i < lines.Length; i++)
             {
-                var values = lines[i].Split(',');
+                if (string.IsNullOrWhiteSpace(lines[i])) continue;
+                var values = SplitCsvLine(lines[i]);
+                if (values.Length <= labelIndex) continue;
 
                 // Skip the TOTAL summary row and web request rows (URLs start with /)
                 string label = values[labelIndex].Trim();
@@ -229,6 +250,38 @@ namespace TestApp
                 NumberStyles.Any,
                 CultureInfo.InvariantCulture,
                 out double value) ? value / 1000 : 0;
+
+        /// <summary>
+        /// Quote-aware CSV line splitter.  Handles fields wrapped in
+        /// double-quotes and escaped quotes ("").
+        /// </summary>
+        private static string[] SplitCsvLine(string line)
+        {
+            var fields = new List<string>();
+            var sb = new System.Text.StringBuilder();
+            bool inQuotes = false;
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (inQuotes)
+                {
+                    if (c == '"')
+                    {
+                        if (i + 1 < line.Length && line[i + 1] == '"') { sb.Append('"'); i++; }
+                        else inQuotes = false;
+                    }
+                    else sb.Append(c);
+                }
+                else
+                {
+                    if (c == '"') inQuotes = true;
+                    else if (c == ',') { fields.Add(sb.ToString()); sb.Clear(); }
+                    else sb.Append(c);
+                }
+            }
+            fields.Add(sb.ToString());
+            return fields.ToArray();
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // Excel sheet writer
@@ -293,12 +346,15 @@ namespace TestApp
             sheet.Cells.AutoFitColumns();
 
             // ── Wrap in an Excel Table ────────────────────────────────────────
-            int totalRows = records.Count + 1;
-            int totalCols = col - 1;
-            var tableRange = sheet.Cells[1, 1, totalRows, totalCols];
-            var table = sheet.Tables.Add(tableRange, UniqueTableName(package, "ResponseTimes"));
-            table.ShowHeader = true;
-            table.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
+            if (records.Count > 0)
+            {
+                int totalRows = records.Count + 1;
+                int totalCols = col - 1;
+                var tableRange = sheet.Cells[1, 1, totalRows, totalCols];
+                var table = sheet.Tables.Add(tableRange, UniqueTableName(package, "ResponseTimes"));
+                table.ShowHeader = true;
+                table.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
+            }
         }
     }
 }

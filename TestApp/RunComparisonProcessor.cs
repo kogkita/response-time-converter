@@ -156,7 +156,30 @@ namespace TestApp
 
         // ── Entry point: accepts 2..N run files ───────────────────────────────
 
+        /// <summary>
+        /// Auto-detect variant — determines CSV vs JTL per file from extension.
+        /// </summary>
+        public static void Compare(
+            IList<string> runPaths,
+            string outputPath,
+            double slaThresholdMs = 0,
+            ComparisonMode mode = ComparisonMode.AllVsBaseline)
+        {
+            if (runPaths == null || runPaths.Count < 2)
+                throw new ArgumentException("At least two run files are required.");
 
+            ExcelPackage.License.SetNonCommercialPersonal("Run Comparison");
+
+            // Load all files — auto-detect type per file
+            var allRecords = runPaths.Select(p => LoadRecords(p)).ToList();
+
+            CompareInternal(runPaths, allRecords, outputPath, slaThresholdMs, mode);
+        }
+
+        /// <summary>
+        /// Explicit file-type variant — all files are treated as the given type.
+        /// Kept for backward compatibility.
+        /// </summary>
 
         public static void Compare(
 
@@ -186,7 +209,16 @@ namespace TestApp
 
             var allRecords = runPaths.Select(p => LoadRecords(p, fileType)).ToList();
 
+            CompareInternal(runPaths, allRecords, outputPath, slaThresholdMs, mode);
+        }
 
+        private static void CompareInternal(
+            IList<string> runPaths,
+            List<List<FlatRecord>> allRecords,
+            string outputPath,
+            double slaThresholdMs,
+            ComparisonMode mode)
+        {
 
             // Build per-comparison pairs depending on mode
 
@@ -316,6 +348,18 @@ namespace TestApp
 
 
 
+        /// <summary>
+        /// Auto-detects file type from extension and loads records.
+        /// .jtl → JTL parser, everything else → CSV parser.
+        /// </summary>
+        private static List<FlatRecord> LoadRecords(string path)
+        {
+            if (path.EndsWith(".jtl", StringComparison.OrdinalIgnoreCase))
+                return LoadRecords(path, ComparisonFileType.Jtl);
+            return LoadRecords(path, ComparisonFileType.Csv);
+        }
+
+
         private static List<FlatRecord> LoadRecords(string path, ComparisonFileType fileType)
 
         {
@@ -368,7 +412,11 @@ namespace TestApp
 
             var lines = File.ReadAllLines(csvPath);
 
-            var headers = lines[0].Split(',');
+            if (lines.Length == 0)
+
+                throw new InvalidDataException("CSV file is empty.");
+
+            var headers = SplitCsvLine(lines[0]);
 
 
 
@@ -396,6 +444,16 @@ namespace TestApp
 
 
 
+            if (labelIdx < 0 || sampIdx < 0 || avgIdx < 0 ||
+
+                medIdx < 0 || minIdx < 0 || maxIdx < 0 || errIdx < 0)
+
+                throw new InvalidDataException(
+
+                    "CSV file is missing one or more required columns (Label, # Samples, Average, Median, Min, Max, Error %).");
+
+
+
             var records = new List<FlatRecord>();
 
             for (int i = 1; i < lines.Length; i++)
@@ -404,7 +462,9 @@ namespace TestApp
 
                 if (string.IsNullOrWhiteSpace(lines[i])) continue;
 
-                var v = lines[i].Split(',');
+                var v = SplitCsvLine(lines[i]);
+
+                if (v.Length <= labelIdx) continue;
 
                 string label = v[labelIdx].Trim();
 
@@ -420,19 +480,19 @@ namespace TestApp
 
                     Name = label,
 
-                    Samples = ParseInt(v[sampIdx]),
+                    Samples = sampIdx < v.Length ? ParseInt(v[sampIdx]) : 0,
 
-                    Average = ParseMs(v[avgIdx]),
+                    Average = avgIdx < v.Length ? ParseMs(v[avgIdx]) : 0,
 
-                    Median = ParseMs(v[medIdx]),
+                    Median = medIdx < v.Length ? ParseMs(v[medIdx]) : 0,
 
-                    P90 = p90Idx >= 0 ? ParseMs(v[p90Idx]) : 0,
+                    P90 = p90Idx >= 0 && p90Idx < v.Length ? ParseMs(v[p90Idx]) : 0,
 
-                    Min = ParseMs(v[minIdx]),
+                    Min = minIdx < v.Length ? ParseMs(v[minIdx]) : 0,
 
-                    Max = ParseMs(v[maxIdx]),
+                    Max = maxIdx < v.Length ? ParseMs(v[maxIdx]) : 0,
 
-                    Errors = ParsePct(v[errIdx])
+                    Errors = errIdx < v.Length ? ParsePct(v[errIdx]) : 0
 
                 });
 
@@ -454,9 +514,15 @@ namespace TestApp
 
         {
 
-            var baseDict = baseline.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase);
+            // Use GroupBy + First to gracefully handle duplicate transaction names
+            // (ToDictionary would throw an ArgumentException on duplicates)
+            var baseDict = baseline
+                .GroupBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-            var curDict = current.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase);
+            var curDict = current
+                .GroupBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
 
 
@@ -1292,6 +1358,38 @@ namespace TestApp
                 CultureInfo.InvariantCulture, out var d) ? d : 0;
 
 
+
+        /// <summary>
+        /// Quote-aware CSV line splitter.  Handles fields wrapped in
+        /// double-quotes and escaped quotes ("").
+        /// </summary>
+        private static string[] SplitCsvLine(string line)
+        {
+            var fields = new List<string>();
+            var sb = new System.Text.StringBuilder();
+            bool inQuotes = false;
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (inQuotes)
+                {
+                    if (c == '"')
+                    {
+                        if (i + 1 < line.Length && line[i + 1] == '"') { sb.Append('"'); i++; }
+                        else inQuotes = false;
+                    }
+                    else sb.Append(c);
+                }
+                else
+                {
+                    if (c == '"') inQuotes = true;
+                    else if (c == ',') { fields.Add(sb.ToString()); sb.Clear(); }
+                    else sb.Append(c);
+                }
+            }
+            fields.Add(sb.ToString());
+            return fields.ToArray();
+        }
 
         // ── Internal flat record ──────────────────────────────────────────────
 

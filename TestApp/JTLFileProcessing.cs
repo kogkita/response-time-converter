@@ -79,12 +79,26 @@ namespace TestApp
         internal static readonly Dictionary<string, List<JTLFileProcessingRecord>>
             _pendingCharts = new();
 
+        /// <summary>
+        /// Clears any stale pending chart data.  Should be called at the
+        /// start of a clubbed-mode run to avoid leaking data from a previous
+        /// run that may have failed before <see cref="InjectPendingCharts"/>
+        /// was reached.
+        /// </summary>
+        public static void ClearPendingCharts() => _pendingCharts.Clear();
+
         /// <summary>Called by MainWindow after SaveAs in clubbed mode.</summary>
         public static void InjectPendingCharts(string xlsxPath)
         {
-            foreach (var kvp in _pendingCharts)
-                JTLFileProcessingExcelCharts.InjectChartsForSheet(xlsxPath, kvp.Key, kvp.Value);
-            _pendingCharts.Clear();
+            try
+            {
+                foreach (var kvp in _pendingCharts)
+                    JTLFileProcessingExcelCharts.InjectChartsForSheet(xlsxPath, kvp.Key, kvp.Value);
+            }
+            finally
+            {
+                _pendingCharts.Clear();
+            }
         }
 
         // ── Sheet-name helpers ────────────────────────────────────────────────
@@ -178,7 +192,7 @@ namespace TestApp
                 {
                     labelElapsed[label] = new List<int>();
                     labelErrors[label] = 0;
-                    labelFirstTs[label] = ts;
+                    labelFirstTs[label] = ts > 0 ? ts : long.MaxValue;
                     labelIsTx[label] = isTx;
                 }
                 else
@@ -309,10 +323,13 @@ namespace TestApp
             }
 
             sheet.Cells.AutoFitColumns();
-            var tableRange = sheet.Cells[1, 1, records.Count + 1, totalCols];
-            var table = sheet.Tables.Add(tableRange, UniqueTableName(package, "JTLResults"));
-            table.ShowHeader = true;
-            table.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
+            if (records.Count > 0)
+            {
+                var tableRange = sheet.Cells[1, 1, records.Count + 1, totalCols];
+                var table = sheet.Tables.Add(tableRange, UniqueTableName(package, "JTLResults"));
+                table.ShowHeader = true;
+                table.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
+            }
             return sheet;
         }
     }

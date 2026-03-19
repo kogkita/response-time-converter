@@ -270,6 +270,9 @@ namespace TestApp
             };
             if (dlg.ShowDialog() != true) return;
 
+            // Clear stale chart data from any previous failed run
+            ResponseTimeConverter.ClearPendingCharts();
+
             var errors = new List<string>();
             int succeeded = 0;
 
@@ -466,6 +469,9 @@ namespace TestApp
                 FileName = "JTLResults_Combined.xlsx"
             };
             if (dlg.ShowDialog() != true) return;
+
+            // Clear stale chart data from any previous failed run
+            JTLFileProcessing.ClearPendingCharts();
 
             var errors = new List<string>();
             int succeeded = 0;
@@ -1125,15 +1131,40 @@ namespace TestApp
                 row.Children.Add(clearBtn);
                 CmpFileRowsPanel.Children.Add(row);
             }
+
+            CmpUpdateFileTypeLabel();
+        }
+
+        /// <summary>
+        /// Updates the auto-detected "File type" label based on the extensions
+        /// of the files currently selected in the comparison rows.
+        /// </summary>
+        private void CmpUpdateFileTypeLabel()
+        {
+            var paths = cmpRunFiles.Where(p => !string.IsNullOrEmpty(p)).ToList();
+            if (paths.Count == 0)
+            {
+                CmpFileTypeLabel.Text = "No files selected";
+                return;
+            }
+
+            bool hasCsv = paths.Any(p => p.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
+            bool hasJtl = paths.Any(p => p.EndsWith(".jtl", StringComparison.OrdinalIgnoreCase));
+
+            if (hasCsv && hasJtl)
+                CmpFileTypeLabel.Text = "Mix of CSV & JTL";
+            else if (hasJtl)
+                CmpFileTypeLabel.Text = "JTL Only";
+            else
+                CmpFileTypeLabel.Text = "CSV Only";
         }
 
         private void CmpSetFile(int index, string path)
         {
-            bool jtl = CmpTypeJtl.IsChecked == true;
-            string ext = jtl ? ".jtl" : ".csv";
-            if (!path.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+            string ext = Path.GetExtension(path).ToLowerInvariant();
+            if (ext != ".csv" && ext != ".jtl")
             {
-                MessageBox.Show($"Please select a {ext.ToUpperInvariant()} file to match the selected file type.",
+                MessageBox.Show("Please select a CSV or JTL file.",
                     "Wrong File Type", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1148,14 +1179,11 @@ namespace TestApp
 
         private void CmpBrowseRow(int index)
         {
-            bool jtl = CmpTypeJtl.IsChecked == true;
             string label = index == 0 ? "Select Baseline File" : $"Select Run {index + 1} File";
             var dlg = new OpenFileDialog
             {
                 Title = label,
-                Filter = jtl
-                    ? "JTL Files (*.jtl)|*.jtl|All Files (*.*)|*.*"
-                    : "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+                Filter = "Supported Files (*.csv;*.jtl)|*.csv;*.jtl|CSV Files (*.csv)|*.csv|JTL Files (*.jtl)|*.jtl|All Files (*.*)|*.*"
             };
             if (dlg.ShowDialog() != true) return;
             CmpSetFile(index, dlg.FileName);
@@ -1224,17 +1252,13 @@ namespace TestApp
             };
             if (saveDlg.ShowDialog() != true) return;
 
-            var fileType = CmpTypeJtl.IsChecked == true
-                ? ComparisonFileType.Jtl
-                : ComparisonFileType.Csv;
-
             var mode = CmpModeSequential.IsChecked == true
                 ? ComparisonMode.Sequential
                 : ComparisonMode.AllVsBaseline;
 
             try
             {
-                RunComparisonProcessor.Compare(paths, saveDlg.FileName, fileType, slaMs, mode);
+                RunComparisonProcessor.Compare(paths, saveDlg.FileName, slaMs, mode);
                 MessageBox.Show($"Comparison report saved to:\n{saveDlg.FileName}",
                     "Done", MessageBoxButton.OK, MessageBoxImage.Information);
             }
