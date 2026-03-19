@@ -233,6 +233,9 @@ namespace TestApp
             bool club = ClubOutputCheckbox.IsChecked == true;
             bool includeCharts = IncludeChartsCheckbox.IsChecked == true;
 
+            ShowLogPanel(ConvertLogPanel, ConvertProgress, ConvertLog);
+            LogInfo(ConvertLog, $"Processing {selectedFiles.Count} file(s)…");
+
             if (club)
             {
                 RunConvertClubbed(includeCharts);
@@ -249,6 +252,7 @@ namespace TestApp
                         var output = Path.ChangeExtension(csvPath, ".xlsx");
                         ResponseTimeConverter.Convert(csvPath, output, includeCharts);
                         succeeded++;
+                        LogMsg(ConvertLog, $"✓ {Path.GetFileName(csvPath)} → {Path.GetFileName(output)}");
                     }
                     catch (Exception ex)
                     {
@@ -256,7 +260,7 @@ namespace TestApp
                     }
                 }
 
-                ShowResult(succeeded, errors);
+                LogResult(ConvertLog, ConvertProgress, succeeded, errors);
             }
         }
 
@@ -300,7 +304,7 @@ namespace TestApp
                     ResponseTimeConverter.InjectPendingCharts(dlg.FileName);
             }
 
-            ShowResult(succeeded, errors, dlg.FileName);
+            LogResult(ConvertLog, ConvertProgress, succeeded, errors, dlg.FileName);
         }
         // ── JTL File Processing page ─────────────────────────
 
@@ -433,6 +437,9 @@ namespace TestApp
             bool club = JTLClubOutputCheckbox.IsChecked == true;
             bool includeCharts = JTLIncludeChartsCheckbox.IsChecked == true;
 
+            ShowLogPanel(JTLLogPanel, JTLProgress, JTLLog);
+            LogInfo(JTLLog, $"Processing {jtlSelectedFiles.Count} file(s)…");
+
             if (club)
             {
                 RunJTLClubbed(includeCharts);
@@ -449,6 +456,7 @@ namespace TestApp
                         var output = Path.ChangeExtension(jtlPath, ".xlsx");
                         JTLFileProcessing.Convert(jtlPath, output, includeCharts);
                         succeeded++;
+                        LogMsg(JTLLog, $"✓ {Path.GetFileName(jtlPath)} → {Path.GetFileName(output)}");
                     }
                     catch (Exception ex)
                     {
@@ -456,7 +464,7 @@ namespace TestApp
                     }
                 }
 
-                ShowResult(succeeded, errors);
+                LogResult(JTLLog, JTLProgress, succeeded, errors);
             }
         }
 
@@ -486,6 +494,7 @@ namespace TestApp
                     string prefix = SanitizeSheetName(Path.GetFileNameWithoutExtension(jtlPath), 20);
                     JTLFileProcessing.AppendToPackage(package, jtlPath, prefix, includeCharts);
                     succeeded++;
+                    LogMsg(JTLLog, $"✓ {Path.GetFileName(jtlPath)} added to workbook");
                 }
                 catch (Exception ex)
                 {
@@ -500,7 +509,7 @@ namespace TestApp
                     JTLFileProcessing.InjectPendingCharts(dlg.FileName);
             }
 
-            ShowResult(succeeded, errors, dlg.FileName);
+            LogResult(JTLLog, JTLProgress, succeeded, errors, dlg.FileName);
         }
 
         // ── Shared helpers ───────────────────────────────────
@@ -675,6 +684,8 @@ namespace TestApp
                 return;
             }
 
+            ShowLogPanel(BLGLogPanel, BLGProgress, BLGLog);
+            LogInfo(BLGLog, $"Converting {blgSelectedFiles.Count} file(s)…");
             BLGStatusLabel.Text = $"Converting {blgSelectedFiles.Count} file(s)…";
             BLGStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0xA5, 0xFA));
 
@@ -699,6 +710,7 @@ namespace TestApp
                         };
                         string csv = BLGConverter.ConvertToCsv(opts);
                         succeeded.Add(csv);
+                        Dispatcher.Invoke(() => LogMsg(BLGLog, $"✓ {System.IO.Path.GetFileName(blgPath)} → {System.IO.Path.GetFileName(csv)}"));
                     }
                     catch (Exception ex)
                     {
@@ -708,25 +720,23 @@ namespace TestApp
 
                 Dispatcher.Invoke(() =>
                 {
+                    HideProgress(BLGProgress);
                     if (errors.Count == 0)
                     {
                         BLGStatusLabel.Text = $"Done — {succeeded.Count} CSV file(s) created.";
                         BLGStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
-
-                        string detail = string.Join("\n", succeeded.Select(p => $"  • {p}"));
-                        MessageBox.Show(
-                            $"{succeeded.Count} CSV file(s) created successfully:\n\n{detail}",
-                            "Conversion Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LogSuccess(BLGLog, $"Done — {succeeded.Count} CSV file(s) created successfully.");
                     }
                     else
                     {
                         BLGStatusLabel.Text = $"Completed with {errors.Count} error(s).";
                         BLGStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
-
-                        string msg = succeeded.Count > 0
-                            ? $"{succeeded.Count} succeeded, {errors.Count} failed:\n\n{string.Join("\n", errors)}"
-                            : $"All conversions failed:\n\n{string.Join("\n", errors)}";
-                        MessageBox.Show(msg, "Conversion Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        if (succeeded.Count > 0)
+                            LogMsg(BLGLog, $"{succeeded.Count} succeeded, {errors.Count} failed:", "#FBBF24");
+                        else
+                            LogError(BLGLog, "All conversions failed:");
+                        foreach (var err in errors)
+                            LogError(BLGLog, $"  • {err}");
                     }
                 });
             });
@@ -890,6 +900,8 @@ namespace TestApp
                 // Build options from UI
                 var opts = BuildNmonOptions(xlsmPath);
 
+                ShowLogPanel(NmonLogPanel, NmonProgress, NmonLog);
+                LogInfo(NmonLog, "Running analysis… Excel will open in the background.");
                 NmonStatusLabel.Text = "Running analysis… Excel will open in the background.";
                 NmonStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0xA5, 0xFA));
 
@@ -901,29 +913,28 @@ namespace TestApp
                         NmonAnalyzer.Run(opts);
                         Dispatcher.Invoke(() =>
                         {
+                            HideProgress(NmonProgress);
                             NmonStatusLabel.Text = "Analysis complete. Check the output directory for Excel files.";
                             NmonStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
-                            MessageBox.Show("nmon analysis complete!\n\nExcel files saved to:\n" +
-                                (string.IsNullOrEmpty(opts.OutDir) ? "Same directory as each input file" : opts.OutDir),
-                                "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+                            string outDir = string.IsNullOrEmpty(opts.OutDir) ? "Same directory as each input file" : opts.OutDir;
+                            LogSuccess(NmonLog, $"Analysis complete — Excel files saved to: {outDir}");
                         });
                     }
                     catch (Exception ex)
                     {
                         Dispatcher.Invoke(() =>
                         {
+                            HideProgress(NmonProgress);
                             NmonStatusLabel.Text = $"Error: {ex.Message}";
                             NmonStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
-                            MessageBox.Show($"Analysis failed:\n\n{ex.Message}",
-                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            LogError(NmonLog, $"Analysis failed: {ex.Message}");
                         });
                     }
                 });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to start analysis:\n\n{ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(NmonLog, $"Failed to start analysis: {ex.Message}");
             }
         }
 
@@ -953,23 +964,52 @@ namespace TestApp
             };
         }
 
-        private static void ShowResult(int succeeded, List<string> errors, string? savedPath = null)
+        // ── Log panel helpers ─────────────────────────────────
+
+        private void ShowLogPanel(Border panel, ProgressBar progress, TextBlock log)
         {
+            log.Text = "";
+            panel.Visibility = Visibility.Visible;
+            progress.Visibility = Visibility.Visible;
+        }
+
+        private void HideProgress(ProgressBar progress)
+        {
+            progress.Visibility = Visibility.Collapsed;
+        }
+
+        private void LogMsg(TextBlock log, string message, string colorHex = "#8B93A5")
+        {
+            string ts = DateTime.Now.ToString("HH:mm:ss");
+            if (log.Text.Length > 0) log.Text += "\n";
+            log.Text += $"[{ts}]  {message}";
+            log.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+        }
+
+        private void LogSuccess(TextBlock log, string message) => LogMsg(log, message, "#4ADE80");
+        private void LogError(TextBlock log, string message) => LogMsg(log, message, "#F87171");
+        private void LogInfo(TextBlock log, string message) => LogMsg(log, message, "#60A5FA");
+
+        private void LogResult(TextBlock log, ProgressBar progress, int succeeded, List<string> errors, string? savedPath = null)
+        {
+            HideProgress(progress);
             if (errors.Count == 0)
             {
                 string msg = savedPath != null
-                    ? $"Combined workbook saved to:\n{savedPath}"
+                    ? $"Done — Combined workbook saved to: {savedPath}"
                     : succeeded == 1
-                        ? "Excel file created successfully."
-                        : $"{succeeded} Excel files created successfully.";
-                MessageBox.Show(msg, "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ? "Done — Excel file created successfully."
+                        : $"Done — {succeeded} Excel files created successfully.";
+                LogSuccess(log, msg);
             }
             else
             {
-                string msg = succeeded > 0
-                    ? $"{succeeded} file(s) processed. {errors.Count} failed:\n\n{string.Join("\n", errors)}"
-                    : $"All processing failed:\n\n{string.Join("\n", errors)}";
-                MessageBox.Show(msg, "Completed with Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (succeeded > 0)
+                    LogMsg(log, $"{succeeded} file(s) processed. {errors.Count} failed:", "#FBBF24");
+                else
+                    LogError(log, $"All processing failed:");
+                foreach (var err in errors)
+                    LogError(log, $"  • {err}");
             }
         }
 
@@ -1256,16 +1296,19 @@ namespace TestApp
                 ? ComparisonMode.Sequential
                 : ComparisonMode.AllVsBaseline;
 
+            ShowLogPanel(CmpLogPanel, CmpProgress, CmpLog);
+            LogInfo(CmpLog, $"Comparing {paths.Count} files…");
+
             try
             {
                 RunComparisonProcessor.Compare(paths, saveDlg.FileName, slaMs, mode);
-                MessageBox.Show($"Comparison report saved to:\n{saveDlg.FileName}",
-                    "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+                HideProgress(CmpProgress);
+                LogSuccess(CmpLog, $"Done — Comparison report saved to: {saveDlg.FileName}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Comparison failed:\n\n{ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                HideProgress(CmpProgress);
+                LogError(CmpLog, $"Comparison failed: {ex.Message}");
             }
         }
     }

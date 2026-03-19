@@ -713,6 +713,12 @@ namespace TestApp
             ExcelPackage pkg, List<ComparisonRecord> rows, double slaMs,
             string prefix = "", string leftPath = "", string rightPath = "")
         {
+            // Sort: matched records by delta descending, then one-sided records at the bottom
+            var sorted = rows
+                .OrderBy(r => r.OnlyInBaseline || r.OnlyInCurrent ? 1 : 0)
+                .ThenByDescending(r => BothPresent(r) ? r.DeltaAvgPct : double.MinValue)
+                .ToList();
+
             var ws = pkg.Workbook.Worksheets.Add($"{prefix}Avg Comparison");
             string leftLbl = string.IsNullOrEmpty(leftPath) ? "Baseline" : Path.GetFileNameWithoutExtension(leftPath);
             string rightLbl = string.IsNullOrEmpty(rightPath) ? "Current" : Path.GetFileNameWithoutExtension(rightPath);
@@ -733,7 +739,7 @@ namespace TestApp
 
             int row = 2;
 
-            foreach (var r in rows)
+            foreach (var r in sorted)
 
             {
 
@@ -829,6 +835,12 @@ namespace TestApp
             ExcelPackage pkg, List<ComparisonRecord> rows, double slaMs,
             string prefix = "", string leftPath = "", string rightPath = "")
         {
+            // Sort: matched records by delta descending, then one-sided records at the bottom
+            var sorted = rows
+                .OrderBy(r => r.OnlyInBaseline || r.OnlyInCurrent ? 1 : 0)
+                .ThenByDescending(r => BothPresent(r) ? r.DeltaP90Pct : double.MinValue)
+                .ToList();
+
             var ws = pkg.Workbook.Worksheets.Add($"{prefix}P90 Comparison");
             string leftLbl = string.IsNullOrEmpty(leftPath) ? "Baseline" : Path.GetFileNameWithoutExtension(leftPath);
             string rightLbl = string.IsNullOrEmpty(rightPath) ? "Current" : Path.GetFileNameWithoutExtension(rightPath);
@@ -849,7 +861,7 @@ namespace TestApp
 
             int row = 2;
 
-            foreach (var r in rows)
+            foreach (var r in sorted)
 
             {
 
