@@ -221,7 +221,7 @@ namespace TestApp
             DropZone.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0D1020"));
         }
 
-        private void RunProcessing_Click(object sender, RoutedEventArgs e)
+        private async void RunProcessing_Click(object sender, RoutedEventArgs e)
         {
             if (selectedFiles.Count == 0)
             {
@@ -233,38 +233,42 @@ namespace TestApp
             bool club = ClubOutputCheckbox.IsChecked == true;
             bool includeCharts = IncludeChartsCheckbox.IsChecked == true;
 
-            ShowLogPanel(ConvertLogPanel, ConvertProgress, ConvertLog);
-            LogInfo(ConvertLog, $"Processing {selectedFiles.Count} file(s)…");
-
             if (club)
             {
-                RunConvertClubbed(includeCharts);
+                await RunConvertClubbed(includeCharts);
             }
             else
             {
+                ShowLogPanel(ConvertLogPanel, ConvertProgress, ConvertLog);
+                LogInfo(ConvertLog, $"Processing {selectedFiles.Count} file(s)…");
+
+                var files = selectedFiles.ToList();
                 int succeeded = 0;
                 var errors = new List<string>();
 
-                foreach (var csvPath in selectedFiles)
+                await System.Threading.Tasks.Task.Run(() =>
                 {
-                    try
+                    foreach (var csvPath in files)
                     {
-                        var output = Path.ChangeExtension(csvPath, ".xlsx");
-                        ResponseTimeConverter.Convert(csvPath, output, includeCharts);
-                        succeeded++;
-                        LogMsg(ConvertLog, $"✓ {Path.GetFileName(csvPath)} → {Path.GetFileName(output)}");
+                        try
+                        {
+                            var output = Path.ChangeExtension(csvPath, ".xlsx");
+                            ResponseTimeConverter.Convert(csvPath, output, includeCharts);
+                            succeeded++;
+                            Dispatcher.Invoke(() => LogMsg(ConvertLog, $"✓ {Path.GetFileName(csvPath)} → {Path.GetFileName(output)}"));
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"{Path.GetFileName(csvPath)}: {ex.Message}");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"{Path.GetFileName(csvPath)}: {ex.Message}");
-                    }
-                }
+                });
 
                 LogResult(ConvertLog, ConvertProgress, succeeded, errors);
             }
         }
 
-        private void RunConvertClubbed(bool includeCharts)
+        private async System.Threading.Tasks.Task RunConvertClubbed(bool includeCharts)
         {
             var dlg = new SaveFileDialog
             {
@@ -272,39 +276,49 @@ namespace TestApp
                 Filter = "Excel Workbook (*.xlsx)|*.xlsx",
                 FileName = "ResponseTimes_Combined.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() != true)
+            {
+                HideLogPanel(ConvertLogPanel, ConvertProgress);
+                return;
+            }
 
-            // Clear stale chart data from any previous failed run
-            ResponseTimeConverter.ClearPendingCharts();
+            ShowLogPanel(ConvertLogPanel, ConvertProgress, ConvertLog);
+            LogInfo(ConvertLog, $"Processing {selectedFiles.Count} file(s)…");
 
+            var files = selectedFiles.ToList();
+            var outputPath = dlg.FileName;
             var errors = new List<string>();
             int succeeded = 0;
 
-            ExcelPackage.License.SetNonCommercialPersonal("Response Time Converter");
-            using var package = new ExcelPackage();
-
-            foreach (var csvPath in selectedFiles)
+            await System.Threading.Tasks.Task.Run(() =>
             {
-                try
-                {
-                    string prefix = SanitizeSheetName(Path.GetFileNameWithoutExtension(csvPath), 20);
-                    ResponseTimeConverter.AppendToPackage(package, csvPath, prefix, includeCharts);
-                    succeeded++;
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"{Path.GetFileName(csvPath)}: {ex.Message}");
-                }
-            }
+                ResponseTimeConverter.ClearPendingCharts();
+                ExcelPackage.License.SetNonCommercialPersonal("Response Time Converter");
+                using var package = new ExcelPackage();
 
-            if (succeeded > 0)
-            {
-                package.SaveAs(new FileInfo(dlg.FileName));
-                if (includeCharts)
-                    ResponseTimeConverter.InjectPendingCharts(dlg.FileName);
-            }
+                foreach (var csvPath in files)
+                {
+                    try
+                    {
+                        string prefix = SanitizeSheetName(Path.GetFileNameWithoutExtension(csvPath), 20);
+                        ResponseTimeConverter.AppendToPackage(package, csvPath, prefix, includeCharts);
+                        succeeded++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{Path.GetFileName(csvPath)}: {ex.Message}");
+                    }
+                }
 
-            LogResult(ConvertLog, ConvertProgress, succeeded, errors, dlg.FileName);
+                if (succeeded > 0)
+                {
+                    package.SaveAs(new FileInfo(outputPath));
+                    if (includeCharts)
+                        ResponseTimeConverter.InjectPendingCharts(outputPath);
+                }
+            });
+
+            LogResult(ConvertLog, ConvertProgress, succeeded, errors, outputPath);
         }
         // ── JTL File Processing page ─────────────────────────
 
@@ -425,7 +439,7 @@ namespace TestApp
             JTLDropZone.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0D1020"));
         }
 
-        private void JTLRunProcessing_Click(object sender, RoutedEventArgs e)
+        private async void JTLRunProcessing_Click(object sender, RoutedEventArgs e)
         {
             if (jtlSelectedFiles.Count == 0)
             {
@@ -437,38 +451,42 @@ namespace TestApp
             bool club = JTLClubOutputCheckbox.IsChecked == true;
             bool includeCharts = JTLIncludeChartsCheckbox.IsChecked == true;
 
-            ShowLogPanel(JTLLogPanel, JTLProgress, JTLLog);
-            LogInfo(JTLLog, $"Processing {jtlSelectedFiles.Count} file(s)…");
-
             if (club)
             {
-                RunJTLClubbed(includeCharts);
+                await RunJTLClubbed(includeCharts);
             }
             else
             {
+                ShowLogPanel(JTLLogPanel, JTLProgress, JTLLog);
+                LogInfo(JTLLog, $"Processing {jtlSelectedFiles.Count} file(s)…");
+
+                var files = jtlSelectedFiles.ToList();
                 int succeeded = 0;
                 var errors = new List<string>();
 
-                foreach (var jtlPath in jtlSelectedFiles)
+                await System.Threading.Tasks.Task.Run(() =>
                 {
-                    try
+                    foreach (var jtlPath in files)
                     {
-                        var output = Path.ChangeExtension(jtlPath, ".xlsx");
-                        JTLFileProcessing.Convert(jtlPath, output, includeCharts);
-                        succeeded++;
-                        LogMsg(JTLLog, $"✓ {Path.GetFileName(jtlPath)} → {Path.GetFileName(output)}");
+                        try
+                        {
+                            var output = Path.ChangeExtension(jtlPath, ".xlsx");
+                            JTLFileProcessing.Convert(jtlPath, output, includeCharts);
+                            succeeded++;
+                            Dispatcher.Invoke(() => LogMsg(JTLLog, $"✓ {Path.GetFileName(jtlPath)} → {Path.GetFileName(output)}"));
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
-                    }
-                }
+                });
 
                 LogResult(JTLLog, JTLProgress, succeeded, errors);
             }
         }
 
-        private void RunJTLClubbed(bool includeCharts)
+        private async System.Threading.Tasks.Task RunJTLClubbed(bool includeCharts)
         {
             var dlg = new SaveFileDialog
             {
@@ -476,40 +494,50 @@ namespace TestApp
                 Filter = "Excel Workbook (*.xlsx)|*.xlsx",
                 FileName = "JTLResults_Combined.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() != true)
+            {
+                HideLogPanel(JTLLogPanel, JTLProgress);
+                return;
+            }
 
-            // Clear stale chart data from any previous failed run
-            JTLFileProcessing.ClearPendingCharts();
+            ShowLogPanel(JTLLogPanel, JTLProgress, JTLLog);
+            LogInfo(JTLLog, $"Processing {jtlSelectedFiles.Count} file(s)…");
 
+            var files = jtlSelectedFiles.ToList();
+            var outputPath = dlg.FileName;
             var errors = new List<string>();
             int succeeded = 0;
 
-            ExcelPackage.License.SetNonCommercialPersonal("JTL File Processing");
-            using var package = new ExcelPackage();
-
-            foreach (var jtlPath in jtlSelectedFiles)
+            await System.Threading.Tasks.Task.Run(() =>
             {
-                try
-                {
-                    string prefix = SanitizeSheetName(Path.GetFileNameWithoutExtension(jtlPath), 20);
-                    JTLFileProcessing.AppendToPackage(package, jtlPath, prefix, includeCharts);
-                    succeeded++;
-                    LogMsg(JTLLog, $"✓ {Path.GetFileName(jtlPath)} added to workbook");
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
-                }
-            }
+                JTLFileProcessing.ClearPendingCharts();
+                ExcelPackage.License.SetNonCommercialPersonal("JTL File Processing");
+                using var package = new ExcelPackage();
 
-            if (succeeded > 0)
-            {
-                package.SaveAs(new FileInfo(dlg.FileName));
-                if (includeCharts)
-                    JTLFileProcessing.InjectPendingCharts(dlg.FileName);
-            }
+                foreach (var jtlPath in files)
+                {
+                    try
+                    {
+                        string prefix = SanitizeSheetName(Path.GetFileNameWithoutExtension(jtlPath), 20);
+                        JTLFileProcessing.AppendToPackage(package, jtlPath, prefix, includeCharts);
+                        succeeded++;
+                        Dispatcher.Invoke(() => LogMsg(JTLLog, $"✓ {Path.GetFileName(jtlPath)} added to workbook"));
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{Path.GetFileName(jtlPath)}: {ex.Message}");
+                    }
+                }
 
-            LogResult(JTLLog, JTLProgress, succeeded, errors, dlg.FileName);
+                if (succeeded > 0)
+                {
+                    package.SaveAs(new FileInfo(outputPath));
+                    if (includeCharts)
+                        JTLFileProcessing.InjectPendingCharts(outputPath);
+                }
+            });
+
+            LogResult(JTLLog, JTLProgress, succeeded, errors, outputPath);
         }
 
         // ── Shared helpers ───────────────────────────────────
@@ -973,6 +1001,12 @@ namespace TestApp
             progress.Visibility = Visibility.Visible;
         }
 
+        private void HideLogPanel(Border panel, ProgressBar progress)
+        {
+            progress.Visibility = Visibility.Collapsed;
+            panel.Visibility = Visibility.Collapsed;
+        }
+
         private void HideProgress(ProgressBar progress)
         {
             progress.Visibility = Visibility.Collapsed;
@@ -1238,7 +1272,7 @@ namespace TestApp
 
         // ── Run ──────────────────────────────────────────────────────────────
 
-        private void CmpRun_Click(object sender, RoutedEventArgs e)
+        private async void CmpRun_Click(object sender, RoutedEventArgs e)
         {
             // Collect non-empty paths in order
             var paths = cmpRunFiles.Where(p => !string.IsNullOrEmpty(p)).ToList();
@@ -1296,11 +1330,13 @@ namespace TestApp
             ShowLogPanel(CmpLogPanel, CmpProgress, CmpLog);
             LogInfo(CmpLog, $"Comparing {paths.Count} files…");
 
+            var outputPath = saveDlg.FileName;
             try
             {
-                RunComparisonProcessor.Compare(paths, saveDlg.FileName, slaMs, mode);
+                await System.Threading.Tasks.Task.Run(() =>
+                    RunComparisonProcessor.Compare(paths, outputPath, slaMs, mode));
                 HideProgress(CmpProgress);
-                LogSuccess(CmpLog, $"Done — Comparison report saved to: {saveDlg.FileName}");
+                LogSuccess(CmpLog, $"Done — Comparison report saved to: {outputPath}");
             }
             catch (Exception ex)
             {

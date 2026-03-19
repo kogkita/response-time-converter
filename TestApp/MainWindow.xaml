@@ -1367,12 +1367,19 @@
                         <Grid Margin="36,28,36,28">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <!-- heading -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- file rows -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- add run button -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- options -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- log panel -->
                                 <RowDefinition Height="*"/>
+                                <!-- spacer -->
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto" MaxHeight="150"/>
+                                <!-- run button -->
                             </Grid.RowDefinitions>
 
                             <!-- Heading -->
@@ -1492,7 +1499,7 @@
                             </Grid>
 
                             <!-- Run button -->
-                            <Grid Grid.Row="5" Margin="0,16,0,0">
+                            <Grid Grid.Row="6" Margin="0,16,0,0">
                                 <Button Content="Run Comparison"
                                         Style="{StaticResource ActionButtonStyle}"
                                         Background="#7C3AED" Foreground="White"
@@ -1503,7 +1510,7 @@
                             </Grid>
 
                             <!-- Log panel -->
-                            <Border Grid.Row="6" Background="#0A0D18" BorderBrush="#1A2030"
+                            <Border Grid.Row="4" Background="#0A0D18" BorderBrush="#1A2030"
                                     BorderThickness="1" CornerRadius="6" Margin="0,10,0,0"
                                     Padding="10,8" Visibility="Collapsed"
                                     x:Name="CmpLogPanel">
