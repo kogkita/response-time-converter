@@ -363,6 +363,28 @@
                             </Button>
                         </StackPanel>
 
+                        <!-- ── Run Scripts group ── -->
+                        <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,8"/>
+
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="RUN SCRIPTS"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="#6B7A99"
+                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                   Margin="20,4,0,4"/>
+
+                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
+                            <Button x:Name="NavScriptRunner"
+                                    Style="{StaticResource NavButtonStyle}"
+                                    Click="NavScriptRunner_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#x25B6;" FontSize="13" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Script Runner" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
                         <TextBlock DockPanel.Dock="Bottom"
                                    Text="v1.2.0"
                                    FontSize="11"
@@ -1729,6 +1751,372 @@
                             </Border>
                         </Grid>
                     </Grid>
+
+                    <!-- ══ SCRIPT RUNNER PAGE ══ -->
+                    <Grid x:Name="PageScriptRunner" Visibility="Collapsed">
+                        <Grid Margin="36,28,36,28">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>  <!-- heading -->
+                                <RowDefinition Height="*"/>     <!-- two-column body -->
+                            </Grid.RowDefinitions>
+
+                            <!-- Heading -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                <TextBlock Text="Script Runner"
+                                           FontSize="21" FontWeight="SemiBold"
+                                           Foreground="#E2E8F0"
+                                           FontFamily="Segoe UI Variable, Segoe UI"/>
+                                <TextBlock Text="Save scripts to the library for one-click reuse, or load a script file directly."
+                                           FontSize="12.5" Foreground="#7A8AA0"
+                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                           Margin="0,4,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <!-- Two-column body -->
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>   <!-- library panel -->
+                                    <ColumnDefinition Width="12"/>    <!-- gutter -->
+                                    <ColumnDefinition Width="*"/>     <!-- runner panel -->
+                                </Grid.ColumnDefinitions>
+
+                                <!-- ══ LEFT: Script Library ══ -->
+                                <Grid Grid.Column="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>  <!-- library header -->
+                                        <RowDefinition Height="*"/>     <!-- library list -->
+                                        <RowDefinition Height="Auto"/>  <!-- add button -->
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Library header -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="SCRIPT LIBRARY"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="+ Save Current"
+                                                x:Name="LibrarySaveBtn"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#1E2640" Foreground="#60A5FA"
+                                                FontSize="10" FontWeight="SemiBold"
+                                                Height="24" Padding="8,0"
+                                                Click="LibrarySave_Click"/>
+                                    </Grid>
+
+                                    <!-- Library list -->
+                                    <Border Grid.Row="1" Background="#0A0D18" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="4">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="LibraryPanel"/>
+                                        </ScrollViewer>
+                                    </Border>
+
+                                    <!-- Empty state hint -->
+                                    <TextBlock Grid.Row="1"
+                                               x:Name="LibraryEmptyLabel"
+                                               Text="No saved scripts yet.&#x0a;Configure a script on the right&#x0a;and click + Save Current."
+                                               Foreground="#3D4D70" FontSize="11.5"
+                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               IsHitTestVisible="False"/>
+                                </Grid>
+
+                                <!-- ══ RIGHT: Runner ══ -->
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>  <!-- script file -->
+                                        <RowDefinition Height="Auto"/>  <!-- runtime + args -->
+                                        <RowDefinition Height="Auto"/>  <!-- working dir + env vars -->
+                                        <RowDefinition Height="*"/>     <!-- log panel -->
+                                        <RowDefinition Height="Auto"/>  <!-- run button -->
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Script file selector -->
+                                    <Border Grid.Row="0" Background="#0D1020" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="SCRIPT FILE"
+                                                       FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                       FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,6"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                                        BorderThickness="1" CornerRadius="6" Height="34"
+                                                        AllowDrop="True"
+                                                        Drop="ScriptFile_Drop"
+                                                        DragEnter="ScriptFile_DragEnter"
+                                                        DragLeave="ScriptFile_DragLeave">
+                                                    <TextBlock x:Name="ScriptFileLabel"
+                                                               Text="No script selected — browse or drag &amp; drop"
+                                                               Foreground="#6B7FA8" FontSize="11.5"
+                                                               FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                                               VerticalAlignment="Center" Padding="10,0"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Border>
+                                                <Button Grid.Column="1" Content="Browse…"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#2563EB" Foreground="White"
+                                                        FontSize="12" FontWeight="SemiBold"
+                                                        Width="84" Height="34" Margin="8,0,0,0"
+                                                        Click="ScriptBrowse_Click"/>
+                                                <Button x:Name="ScriptFileClearBtn" Grid.Column="2"
+                                                        Content="✕"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#3D1F1F" Foreground="#F87171"
+                                                        FontSize="12" Width="34" Height="34"
+                                                        Margin="6,0,0,0" Visibility="Collapsed"
+                                                        Click="ScriptFileClear_Click"/>
+                                            </Grid>
+                                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                <TextBlock Text="Detected type:"
+                                                           Foreground="#6B7A99" FontSize="11"
+                                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                                           VerticalAlignment="Center"/>
+                                                <Border x:Name="ScriptTypeBadge"
+                                                        Background="#1E2640" CornerRadius="4"
+                                                        Padding="8,2" Margin="8,0,0,0">
+                                                    <TextBlock x:Name="ScriptTypeLabel"
+                                                               Text="None"
+                                                               Foreground="#60A5FA" FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               FontFamily="Segoe UI Variable, Segoe UI"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Runtime + Args -->
+                                    <Border Grid.Row="1" Background="#0D1020" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="2*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="RUNTIME OVERRIDE"
+                                                               Foreground="#6B7A99" FontSize="10" FontWeight="Bold"
+                                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                    <Border Width="15" Height="15" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="280">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Runtime Override" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Leave blank to auto-detect. Override for a specific version, e.g. py -3.11 or C:\Python311\python.exe"/>
+                                                                </StackPanel>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                   Foreground="#60A5FA"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBox x:Name="ScriptRuntimeBox"
+                                                         Background="#161B2A" Foreground="#CBD5E1"
+                                                         BorderBrush="#252D42" FontSize="12" Height="30"
+                                                         Padding="8,0" VerticalContentAlignment="Center"
+                                                         FontFamily="Consolas, Segoe UI Mono, Segoe UI"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="ARGUMENTS  (optional)"
+                                                           Foreground="#6B7A99" FontSize="10" FontWeight="Bold"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                <TextBox x:Name="ScriptArgsBox"
+                                                         Background="#161B2A" Foreground="#CBD5E1"
+                                                         BorderBrush="#252D42" FontSize="12" Height="30"
+                                                         Padding="8,0" VerticalContentAlignment="Center"
+                                                         FontFamily="Consolas, Segoe UI Mono, Segoe UI"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Working dir + Env vars -->
+                                    <Border Grid.Row="2" Background="#0D1020" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="WORKING DIRECTORY  (blank = script folder)"
+                                                           Foreground="#6B7A99" FontSize="10" FontWeight="Bold"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox x:Name="ScriptWorkDirBox" Grid.Column="0"
+                                                             Background="#161B2A" Foreground="#CBD5E1"
+                                                             BorderBrush="#252D42" FontSize="11" Height="30"
+                                                             Padding="8,0" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="…"
+                                                            Style="{StaticResource ActionButtonStyle}"
+                                                            Background="#374151" Foreground="#B0BAC8"
+                                                            Width="30" Height="30" Margin="6,0,0,0"
+                                                            Click="ScriptWorkDir_Click"/>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="ENVIRONMENT VARIABLES"
+                                                               Foreground="#6B7A99" FontSize="10" FontWeight="Bold"
+                                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                    <Button Content="+ Add"
+                                                            Style="{StaticResource ActionButtonStyle}"
+                                                            Background="#1E2640" Foreground="#60A5FA"
+                                                            FontSize="10" FontWeight="SemiBold"
+                                                            Height="20" Padding="8,0" Margin="8,0,0,0"
+                                                            Click="ScriptAddEnvVar_Click"/>
+                                                </StackPanel>
+                                                <Border Background="#0A0D18" BorderBrush="#1A2030"
+                                                        BorderThickness="1" CornerRadius="6"
+                                                        MaxHeight="70" Padding="4,2">
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                        <StackPanel x:Name="ScriptEnvVarPanel"/>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Log panel -->
+                                    <Border Grid.Row="3" Background="#060810" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8"
+                                            Padding="12,10" Visibility="Collapsed"
+                                            x:Name="ScriptLogPanel">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0" Margin="0,0,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ProgressBar x:Name="ScriptProgress" Height="3"
+                                                             Background="#1A2030" Foreground="#16A34A"
+                                                             BorderThickness="0" IsIndeterminate="True"/>
+                                                <TextBlock x:Name="ScriptExitCodeLabel" Grid.Column="1"
+                                                           Text="" FontSize="11" FontWeight="SemiBold"
+                                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                                           VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                                <Button x:Name="SaveLogAfterRunBtn" Grid.Column="2"
+                                                        Content="💾 Save Log"
+                                                        Visibility="Collapsed"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#7DD3FC"
+                                                        FontSize="11" FontWeight="SemiBold"
+                                                        Height="22" Padding="8,0"
+                                                        Margin="8,0,0,0"
+                                                        Click="SaveLogAfterRun_Click"/>
+                                            </Grid>
+                                            <ScrollViewer Grid.Row="1" x:Name="ScriptLogScroller"
+                                                          VerticalScrollBarVisibility="Auto">
+                                                <TextBlock x:Name="ScriptLog" Text=""
+                                                           Foreground="#A8B3C8" FontSize="11.5"
+                                                           FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                                           TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                            </ScrollViewer>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Run button -->
+                                    <Grid Grid.Row="4" Margin="0,12,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Save log row -->
+                                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                            <CheckBox x:Name="SaveLogCheckbox"
+                                                      VerticalAlignment="Center"
+                                                      Foreground="#A8B3C8" FontSize="12"
+                                                      FontFamily="Segoe UI Variable, Segoe UI"
+                                                      Cursor="Hand"
+                                                      Checked="SaveLog_Toggled"
+                                                      Unchecked="SaveLog_Toggled">
+                                                <TextBlock Text="Save log to file" Foreground="#A8B3C8" FontSize="12"/>
+                                            </CheckBox>
+                                            <Grid x:Name="SaveLogPathPanel" Visibility="Collapsed" Margin="12,0,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="280"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                                        BorderThickness="1" CornerRadius="4" Height="26">
+                                                    <TextBlock x:Name="SaveLogPathLabel"
+                                                               Text="same folder as script"
+                                                               Foreground="#4A5F88" FontSize="11"
+                                                               FontFamily="Consolas, Segoe UI Mono"
+                                                               VerticalAlignment="Center" Padding="8,0"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Border>
+                                                <Button Grid.Column="1" Content="…"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#374151" Foreground="#B0BAC8"
+                                                        Width="26" Height="26" Margin="4,0,0,0"
+                                                        Click="SaveLogBrowse_Click"/>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!-- Buttons row -->
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button x:Name="ScriptRunBtn" Grid.Column="0"
+                                                    Content="▶  Run Script"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#16A34A" Foreground="White"
+                                                    FontSize="14" FontWeight="SemiBold"
+                                                    Width="160" Height="42"
+                                                    Click="ScriptRun_Click"/>
+                                            <Button x:Name="ScriptStopBtn" Grid.Column="1"
+                                                    Content="■  Stop"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#991B1B" Foreground="White"
+                                                    FontSize="14" FontWeight="SemiBold"
+                                                    Width="100" Height="42" Margin="10,0,0,0"
+                                                    Visibility="Collapsed"
+                                                    Click="ScriptStop_Click"/>
+                                            <TextBlock x:Name="ScriptStatusLabel" Grid.Column="2"
+                                                       Text=""
+                                                       Foreground="#7A8AA0" FontSize="12"
+                                                       FontFamily="Segoe UI Variable, Segoe UI"
+                                                       VerticalAlignment="Center" Margin="16,0,0,0"
+                                                       TextWrapping="Wrap"/>
+                                        </Grid>
+                                    </Grid>
+
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+
 
                 </Grid>
             </Grid>
