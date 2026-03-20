@@ -299,7 +299,7 @@
                                    Text="JMETER TOOLS"
                                    FontSize="10"
                                    FontWeight="Bold"
-                                   Foreground="#3D4560"
+                                   Foreground="#6B7A99"
                                    FontFamily="Segoe UI Variable, Segoe UI"
                                    Margin="20,14,0,4"/>
 
@@ -339,7 +339,7 @@
                                    Text="SYSTEM MONITORING"
                                    FontSize="10"
                                    FontWeight="Bold"
-                                   Foreground="#3D4560"
+                                   Foreground="#6B7A99"
                                    FontFamily="Segoe UI Variable, Segoe UI"
                                    Margin="20,4,0,4"/>
 
@@ -405,7 +405,7 @@
                                            FontFamily="Segoe UI Variable, Segoe UI"/>
                                 <TextBlock Text="Import one or more JMeter CSV(.csv) reports and export formatted Excel workbooks with charts."
                                            FontSize="12.5"
-                                           Foreground="#4A5568"
+                                           Foreground="#7A8AA0"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            Margin="0,5,0,0"
                                            TextWrapping="Wrap"/>
@@ -428,7 +428,7 @@
                                         Height="40">
                                     <TextBlock x:Name="FileCountLabel"
                                                Text="No files selected"
-                                               Foreground="#8B93A5"
+                                               Foreground="#A8B3C8"
                                                FontSize="12"
                                                FontFamily="Segoe UI Variable, Segoe UI"
                                                VerticalAlignment="Center"
@@ -454,7 +454,7 @@
                                         Content="Clear All"
                                         Style="{StaticResource ActionButtonStyle}"
                                         Background="#374151"
-                                        Foreground="#9CA3AF"
+                                        Foreground="#B0BAC8"
                                         FontSize="12"
                                         Width="80"
                                         Height="40"
@@ -493,16 +493,16 @@
                                                FontSize="30"
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,10"
-                                               Foreground="#2D3A5A"/>
+                                               Foreground="#4A5F88"/>
                                     <TextBlock Text="Drag &amp; drop CSV files here"
                                                FontSize="14"
                                                FontWeight="SemiBold"
-                                               Foreground="#3D4D70"
+                                               Foreground="#6B7FA8"
                                                HorizontalAlignment="Center"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
                                     <TextBlock Text="Multiple files supported — each gets its own Excel output"
                                                FontSize="11.5"
-                                               Foreground="#252D42"
+                                               Foreground="#6B7FA8"
                                                HorizontalAlignment="Center"
                                                Margin="0,6,0,0"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
@@ -538,18 +538,37 @@
             Height="42"
             Margin="12,0,0,0"
             Padding="14,0">
-                                    <CheckBox x:Name="IncludeChartsCheckbox"
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox x:Name="IncludeChartsCheckbox"
                   IsChecked="False"
                   VerticalAlignment="Center"
-                  Foreground="#8B93A5"
+                  Foreground="#A8B3C8"
                   FontSize="12.5"
                   FontFamily="Segoe UI Variable, Segoe UI"
                   Cursor="Hand">
-                                        <TextBlock>
-                <Run Text="Include Charts" Foreground="#8B93A5"/>
-                <Run Text="  —  add latency chart sheet to output" Foreground="#3D4560" FontSize="11.5"/>
-                                        </TextBlock>
-                                    </CheckBox>
+                                            <TextBlock>
+                <Run Text="Include Charts" Foreground="#A8B3C8"/>
+                <Run Text="  —  add latency chart sheet to output" Foreground="#6B7A99" FontSize="11.5"/>
+                                            </TextBlock>
+                                        </CheckBox>
+                                        <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                            <Border.ToolTip>
+                                                <ToolTip MaxWidth="340">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Include Charts" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Adds a second sheet to the Excel output containing bar charts sorted by average response time — slowest transactions first. Useful for quickly spotting bottlenecks."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#60A5FA" Margin="0,6,0,0" Text="Note: generating charts takes a few extra seconds for large files."/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Border.ToolTip>
+                                            <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Border>
 
                                 <!-- Club into one file checkbox -->
@@ -561,17 +580,36 @@
             Height="42"
             Margin="12,0,0,0"
             Padding="14,0">
-                                    <CheckBox x:Name="ClubOutputCheckbox"
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox x:Name="ClubOutputCheckbox"
                   VerticalAlignment="Center"
-                  Foreground="#8B93A5"
+                  Foreground="#A8B3C8"
                   FontSize="12.5"
                   FontFamily="Segoe UI Variable, Segoe UI"
                   Cursor="Hand">
-                                        <TextBlock>
-                <Run Text="Club into one file" Foreground="#8B93A5"/>
-                <Run Text="  —  all inputs merged into a single Excel workbook" Foreground="#3D4560" FontSize="11.5"/>
-                                        </TextBlock>
-                                    </CheckBox>
+                                            <TextBlock>
+                <Run Text="Club into one file" Foreground="#A8B3C8"/>
+                <Run Text="  —  all inputs merged into a single Excel workbook" Foreground="#6B7A99" FontSize="11.5"/>
+                                            </TextBlock>
+                                        </CheckBox>
+                                        <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                            <Border.ToolTip>
+                                                <ToolTip MaxWidth="340">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Club into one file" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Merges all selected files into a single Excel workbook. Each file gets its own data sheet (and chart sheet if enabled), prefixed with the file name. You will be prompted to choose the save location."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="Without this option, each file produces a separate Excel file saved alongside the source file."/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Border.ToolTip>
+                                            <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Border>
                             </Grid>
 
@@ -587,7 +625,7 @@
                                                  Margin="0,0,0,6"/>
                                     <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
                                         <TextBlock x:Name="ConvertLog" Text=""
-                                                   Foreground="#8B93A5" FontSize="11.5"
+                                                   Foreground="#A8B3C8" FontSize="11.5"
                                                    FontFamily="Consolas, Segoe UI Mono, Segoe UI"
                                                    TextWrapping="Wrap"/>
                                     </ScrollViewer>
@@ -615,7 +653,7 @@
                                            FontFamily="Segoe UI Variable, Segoe UI"/>
                                 <TextBlock Text="Import one or more JMeter JTL(.jtl) files and export formatted Excel workbooks with summary stats and charts."
                                            FontSize="12.5"
-                                           Foreground="#4A5568"
+                                           Foreground="#7A8AA0"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            Margin="0,5,0,0"
                                            TextWrapping="Wrap"/>
@@ -637,7 +675,7 @@
                                         Height="40">
                                     <TextBlock x:Name="JTLFileCountLabel"
                                                Text="No files selected"
-                                               Foreground="#8B93A5"
+                                               Foreground="#A8B3C8"
                                                FontSize="12"
                                                FontFamily="Segoe UI Variable, Segoe UI"
                                                VerticalAlignment="Center"
@@ -661,7 +699,7 @@
                                         Content="Clear All"
                                         Style="{StaticResource ActionButtonStyle}"
                                         Background="#374151"
-                                        Foreground="#9CA3AF"
+                                        Foreground="#B0BAC8"
                                         FontSize="12"
                                         Width="80"
                                         Height="40"
@@ -700,16 +738,16 @@
                                                FontSize="30"
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,10"
-                                               Foreground="#2D3A5A"/>
+                                               Foreground="#4A5F88"/>
                                     <TextBlock Text="Drag &amp; drop JTL files here"
                                                FontSize="14"
                                                FontWeight="SemiBold"
-                                               Foreground="#3D4D70"
+                                               Foreground="#6B7FA8"
                                                HorizontalAlignment="Center"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
                                     <TextBlock Text="Supports .jtl JMeter result files — multiple files get their own Excel output"
                                                FontSize="11.5"
-                                               Foreground="#252D42"
+                                               Foreground="#6B7FA8"
                                                HorizontalAlignment="Center"
                                                Margin="0,6,0,0"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
@@ -745,18 +783,37 @@
             Height="42"
             Margin="12,0,0,0"
             Padding="14,0">
-                                    <CheckBox x:Name="JTLIncludeChartsCheckbox"
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox x:Name="JTLIncludeChartsCheckbox"
                   IsChecked="False"
                   VerticalAlignment="Center"
-                  Foreground="#8B93A5"
+                  Foreground="#A8B3C8"
                   FontSize="12.5"
                   FontFamily="Segoe UI Variable, Segoe UI"
                   Cursor="Hand">
-                                        <TextBlock>
-                <Run Text="Include Charts" Foreground="#8B93A5"/>
-                <Run Text="  —  add latency chart sheet to output" Foreground="#3D4560" FontSize="11.5"/>
-                                        </TextBlock>
-                                    </CheckBox>
+                                            <TextBlock>
+                <Run Text="Include Charts" Foreground="#A8B3C8"/>
+                <Run Text="  —  add latency chart sheet to output" Foreground="#6B7A99" FontSize="11.5"/>
+                                            </TextBlock>
+                                        </CheckBox>
+                                        <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                            <Border.ToolTip>
+                                                <ToolTip MaxWidth="340">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Include Charts" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Adds a second sheet to the Excel output containing bar charts sorted by average response time — slowest transactions first. Useful for quickly spotting bottlenecks."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#60A5FA" Margin="0,6,0,0" Text="Note: generating charts takes a few extra seconds for large files."/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Border.ToolTip>
+                                            <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Border>
 
                                 <!-- Club into one file checkbox -->
@@ -768,17 +825,36 @@
             Height="42"
             Margin="12,0,0,0"
             Padding="14,0">
-                                    <CheckBox x:Name="JTLClubOutputCheckbox"
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox x:Name="JTLClubOutputCheckbox"
                   VerticalAlignment="Center"
-                  Foreground="#8B93A5"
+                  Foreground="#A8B3C8"
                   FontSize="12.5"
                   FontFamily="Segoe UI Variable, Segoe UI"
                   Cursor="Hand">
-                                        <TextBlock>
-                <Run Text="Club into one file" Foreground="#8B93A5"/>
-                <Run Text="  —  all inputs merged into a single Excel workbook" Foreground="#3D4560" FontSize="11.5"/>
-                                        </TextBlock>
-                                    </CheckBox>
+                                            <TextBlock>
+                <Run Text="Club into one file" Foreground="#A8B3C8"/>
+                <Run Text="  —  all inputs merged into a single Excel workbook" Foreground="#6B7A99" FontSize="11.5"/>
+                                            </TextBlock>
+                                        </CheckBox>
+                                        <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                            <Border.ToolTip>
+                                                <ToolTip MaxWidth="340">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Club into one file" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Merges all selected files into a single Excel workbook. Each file gets its own data sheet (and chart sheet if enabled), prefixed with the file name. You will be prompted to choose the save location."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="Without this option, each file produces a separate Excel file saved alongside the source file."/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Border.ToolTip>
+                                            <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Border>
                             </Grid>
 
@@ -794,7 +870,7 @@
                                                  Margin="0,0,0,6"/>
                                     <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
                                         <TextBlock x:Name="JTLLog" Text=""
-                                                   Foreground="#8B93A5" FontSize="11.5"
+                                                   Foreground="#A8B3C8" FontSize="11.5"
                                                    FontFamily="Consolas, Segoe UI Mono, Segoe UI"
                                                    TextWrapping="Wrap"/>
                                     </ScrollViewer>
@@ -832,7 +908,7 @@
                                            Foreground="#E2E8F0"
                                            FontFamily="Segoe UI Variable, Segoe UI"/>
                                     <TextBlock Text="Convert Windows Performance Monitor .blg files to CSV using relog.exe"
-                                           FontSize="12.5" Foreground="#4A5568"
+                                           FontSize="12.5" Foreground="#7A8AA0"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            Margin="0,4,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
@@ -847,7 +923,7 @@
                                     <Border Grid.Column="0" Background="#0A0D18" BorderBrush="#1A2030"
                                         BorderThickness="1" CornerRadius="6" Height="40">
                                         <TextBlock x:Name="BLGFileCountLabel" Text="No files selected"
-                                               Foreground="#8B93A5" FontSize="12"
+                                               Foreground="#A8B3C8" FontSize="12"
                                                FontFamily="Segoe UI Variable, Segoe UI"
                                                VerticalAlignment="Center" Padding="12,0"/>
                                     </Border>
@@ -860,7 +936,7 @@
                                     <Button x:Name="BLGClearAllButton" Grid.Column="2"
                                         Content="Clear All"
                                         Style="{StaticResource ActionButtonStyle}"
-                                        Background="#374151" Foreground="#9CA3AF"
+                                        Background="#374151" Foreground="#B0BAC8"
                                         FontSize="12" Width="80" Height="40"
                                         Margin="8,0,0,0" Visibility="Collapsed"
                                         Click="BLGClearAll_Click"/>
@@ -881,7 +957,7 @@
                                     Padding="16,14" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock Text="CONVERSION OPTIONS"
-                                               FontSize="10" FontWeight="Bold" Foreground="#3D4560"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
                                                FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,12"/>
 
                                         <Grid>
@@ -893,8 +969,29 @@
 
                                             <!-- LEFT: Server type -->
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Text="SERVER TYPE" Foreground="#8B93A5" FontSize="11"
-                                                       FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,8"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <TextBlock Text="SERVER TYPE" Foreground="#A8B3C8" FontSize="11"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                    <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="340">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Server Type" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Selects the built-in counter filter template passed to relog.exe."/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="App Server — includes Memory, CPU, Disk, Network, and Process counters. Best for web/app servers."/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,4,0,0" Text="DB Server — includes all App Server counters plus SQL Server-specific counters (buffer cache, page life expectancy, connections, deadlocks). Best for SQL Server hosts."/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#60A5FA" Margin="0,6,0,0" Text="Override entirely by supplying a custom counter file on the right."/>
+                                                                </StackPanel>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
 
                                                 <Border Background="#161B2A" BorderBrush="#252D42"
                                                     BorderThickness="1" CornerRadius="6" Padding="12,10">
@@ -909,7 +1006,7 @@
                                                                  Checked="BLGServerType_Changed">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="App Server" Foreground="#CBD5E1" FontSize="12.5"/>
-                                                                <TextBlock Text="  — OS + process counters" Foreground="#3D4560" FontSize="11" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="  — OS + process counters" Foreground="#6B7A99" FontSize="11" VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </RadioButton>
                                                         <!-- DB Server -->
@@ -921,7 +1018,7 @@
                                                                  Checked="BLGServerType_Changed">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="DB Server" Foreground="#CBD5E1" FontSize="12.5"/>
-                                                                <TextBlock Text="  — OS + SQL Server counters" Foreground="#3D4560" FontSize="11" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="  — OS + SQL Server counters" Foreground="#6B7A99" FontSize="11" VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </RadioButton>
                                                     </StackPanel>
@@ -931,12 +1028,31 @@
                                             <!-- RIGHT: Custom counter file override -->
                                             <StackPanel Grid.Column="2">
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                    <TextBlock Text="CUSTOM COUNTER FILE" Foreground="#8B93A5" FontSize="11"
+                                                    <TextBlock Text="CUSTOM COUNTER FILE" Foreground="#A8B3C8" FontSize="11"
                                                            FontFamily="Segoe UI Variable, Segoe UI"
                                                            VerticalAlignment="Center"/>
                                                     <TextBlock Text="  (optional — overrides server type template)"
-                                                           Foreground="#3D4560" FontSize="10"
+                                                           Foreground="#6B7A99" FontSize="10"
                                                            VerticalAlignment="Center"/>
+                                                    <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="340">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Custom Counter File" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="A plain text file (.txt) with one Windows Performance Counter path per line, e.g.:"/>
+                                                                    <TextBlock Text="\Processor(_Total)\% Processor Time" FontSize="10.5" Foreground="#7DD3FC" FontFamily="Consolas, Segoe UI Mono" Margin="0,4,0,0"/>
+                                                                    <TextBlock Text="\Memory\Available MBytes" FontSize="10.5" Foreground="#7DD3FC" FontFamily="Consolas, Segoe UI Mono"/>
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="When specified, this file completely replaces the built-in server type template. Wildcards like (*) are supported."/>
+                                                                </StackPanel>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                    </Border>
                                                 </StackPanel>
 
                                                 <Grid>
@@ -949,14 +1065,14 @@
                                                         BorderThickness="1" CornerRadius="6" Height="36">
                                                         <TextBlock x:Name="BLGCounterFileLabel"
                                                                Text="Using default template"
-                                                               Foreground="#4A5568" FontSize="11.5"
+                                                               Foreground="#7A8AA0" FontSize="11.5"
                                                                FontFamily="Consolas, Segoe UI Mono"
                                                                VerticalAlignment="Center" Padding="10,0"
                                                                TextTrimming="CharacterEllipsis"/>
                                                     </Border>
                                                     <Button Grid.Column="1" Content="Browse…"
                                                         Style="{StaticResource ActionButtonStyle}"
-                                                        Background="#374151" Foreground="#9CA3AF"
+                                                        Background="#374151" Foreground="#B0BAC8"
                                                         FontSize="12" Width="80" Height="36"
                                                         Margin="8,0,0,0"
                                                         Click="BLGCounterFileBrowse_Click"/>
@@ -979,7 +1095,7 @@
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
                                                                     <TextBlock Text="{Binding}"
-                                                                           Foreground="#4A6080"
+                                                                           Foreground="#7A9AB8"
                                                                            FontSize="10.5"
                                                                            FontFamily="Consolas, Segoe UI Mono"/>
                                                                 </DataTemplate>
@@ -997,9 +1113,28 @@
                                     BorderThickness="1" CornerRadius="8"
                                     Padding="14,10" Margin="0,0,0,12">
                                     <StackPanel>
-                                        <TextBlock Text="COMMAND PREVIEW"
-                                               FontSize="10" FontWeight="Bold" Foreground="#3D4560"
-                                               FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,6"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <TextBlock Text="COMMAND PREVIEW"
+                                                       FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                       FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                            <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                <Border.ToolTip>
+                                                    <ToolTip MaxWidth="340">
+                                                        <StackPanel>
+                                                            <TextBlock Text="Command Preview" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                            <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Shows the exact relog.exe command that will run. relog.exe is a built-in Windows tool that converts binary .blg Performance Monitor logs into CSV format."/>
+                                                            <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="The -cf flag points to the counter filter file, -f CSV sets the output format, and -y overwrites any existing output file without prompting."/>
+                                                        </StackPanel>
+                                                    </ToolTip>
+                                                </Border.ToolTip>
+                                                <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                        </StackPanel>
                                         <TextBlock x:Name="BLGCommandPreview"
                                                Text="relog &quot;&lt;file.blg&gt;&quot; -cf &quot;detailed_counters.txt&quot; -f CSV -o &quot;&lt;file&gt;.csv&quot;"
                                                Foreground="#4ADE80" FontSize="11.5"
@@ -1020,13 +1155,13 @@
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock Text="&#x2B07;" FontSize="28"
                                                HorizontalAlignment="Center"
-                                               Margin="0,0,0,8" Foreground="#2D3A5A"/>
+                                               Margin="0,0,0,8" Foreground="#4A5F88"/>
                                         <TextBlock Text="Drag &amp; drop BLG files here"
-                                               FontSize="14" FontWeight="SemiBold" Foreground="#3D4D70"
+                                               FontSize="14" FontWeight="SemiBold" Foreground="#6B7FA8"
                                                HorizontalAlignment="Center"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
                                         <TextBlock Text="Accepts .blg Windows Performance Monitor binary log files"
-                                               FontSize="11.5" Foreground="#252D42"
+                                               FontSize="11.5" Foreground="#6B7FA8"
                                                HorizontalAlignment="Center" Margin="0,5,0,0"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
                                     </StackPanel>
@@ -1060,26 +1195,51 @@
                                                 Background="#161B2A" BorderBrush="#252D42"
                                                 BorderThickness="1" CornerRadius="6"
                                                 Height="42" Margin="12,0,0,0" Padding="14,0">
-                                            <CheckBox x:Name="BLGProduceGraphsCheckbox"
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <CheckBox x:Name="BLGProduceGraphsCheckbox"
                                                       IsChecked="False"
                                                       VerticalAlignment="Center"
-                                                      Foreground="#8B93A5"
+                                                      Foreground="#A8B3C8"
                                                       FontSize="12.5"
                                                       FontFamily="Segoe UI Variable, Segoe UI"
                                                       Cursor="Hand"
                                                       Checked="BLGProduceGraphs_Changed"
                                                       Unchecked="BLGProduceGraphs_Changed">
-                                                <TextBlock>
-                                                    <Run Text="Produce Graphs" Foreground="#8B93A5"/>
-                                                    <Run Text="  — generate Excel charts from CSV" Foreground="#3D4560" FontSize="11.5"/>
-                                                </TextBlock>
-                                            </CheckBox>
+                                                    <TextBlock>
+                                                    <Run Text="Produce Graphs" Foreground="#A8B3C8"/>
+                                                    <Run Text="  — generate Excel charts from CSV" Foreground="#6B7A99" FontSize="11.5"/>
+                                                    </TextBlock>
+                                                </CheckBox>
+                                                <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                    <Border.ToolTip>
+                                                        <ToolTip MaxWidth="340">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Produce Graphs" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="After converting the .blg files to CSV, automatically generates an Excel workbook (BLG_Graphs.xlsx) containing six line charts:"/>
+                                                                <TextBlock FontSize="11.5" Foreground="#CBD5E1" Margin="0,4,0,0" Text="• Available Memory (MB)"/>
+                                                                <TextBlock FontSize="11.5" Foreground="#CBD5E1" Text="• % CPU"/>
+                                                                <TextBlock FontSize="11.5" Foreground="#CBD5E1" Text="• Pages Input/sec"/>
+                                                                <TextBlock FontSize="11.5" Foreground="#CBD5E1" Text="• Disk Queue Length"/>
+                                                                <TextBlock FontSize="11.5" Foreground="#CBD5E1" Text="• Network Interface (Mbps)"/>
+                                                                <TextBlock FontSize="11.5" Foreground="#CBD5E1" Text="• % Disk Busy"/>
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,4,0,0" Text="Each server is a separate line on every chart. Enter server labels below to give each line a readable name."/>
+                                                            </StackPanel>
+                                                        </ToolTip>
+                                                    </Border.ToolTip>
+                                                    <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                </Border>
+                                            </StackPanel>
                                         </Border>
 
                                         <TextBlock Grid.Column="2"
                                                x:Name="BLGStatusLabel"
                                                Text=""
-                                               Foreground="#4A5568" FontSize="12"
+                                               Foreground="#7A8AA0" FontSize="12"
                                                FontFamily="Segoe UI Variable, Segoe UI"
                                                VerticalAlignment="Center" Margin="16,0,0,0"
                                                TextWrapping="Wrap"/>
@@ -1094,10 +1254,10 @@
                                             Padding="14,10" Margin="0,10,0,0">
                                         <StackPanel>
                                             <TextBlock Text="SERVER LABELS FOR GRAPHS"
-                                                       FontSize="10" FontWeight="Bold" Foreground="#3D4560"
+                                                       FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
                                                        FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,8"/>
                                             <TextBlock Text="Optional — enter a display name for each server. Defaults to file name if left blank."
-                                                       FontSize="11.5" Foreground="#4A5568"
+                                                       FontSize="11.5" Foreground="#7A8AA0"
                                                        FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,10"
                                                        TextWrapping="Wrap"/>
                                             <StackPanel x:Name="BLGServerLabelInputs"/>
@@ -1117,7 +1277,7 @@
                                                      Margin="0,0,0,6"/>
                                         <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
                                             <TextBlock x:Name="BLGLog" Text=""
-                                                       Foreground="#8B93A5" FontSize="11.5"
+                                                       Foreground="#A8B3C8" FontSize="11.5"
                                                        FontFamily="Consolas, Segoe UI Mono, Segoe UI"
                                                        TextWrapping="Wrap"/>
                                         </ScrollViewer>
@@ -1158,7 +1318,7 @@
                                            Foreground="#E2E8F0"
                                            FontFamily="Segoe UI Variable, Segoe UI"/>
                                     <TextBlock Text="Parse .nmon files and export formatted Excel workbooks with charts — no external tools required."
-                                           FontSize="12.5" Foreground="#4A5568"
+                                           FontSize="12.5" Foreground="#7A8AA0"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            Margin="0,4,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
@@ -1173,7 +1333,7 @@
                                     <Border Grid.Column="0" Background="#0A0D18" BorderBrush="#1A2030"
                                         BorderThickness="1" CornerRadius="6" Height="40">
                                         <TextBlock x:Name="NmonFileCountLabel" Text="No files selected"
-                                               Foreground="#8B93A5" FontSize="12"
+                                               Foreground="#A8B3C8" FontSize="12"
                                                FontFamily="Segoe UI Variable, Segoe UI"
                                                VerticalAlignment="Center" Padding="12,0"/>
                                     </Border>
@@ -1186,7 +1346,7 @@
                                     <Button x:Name="NmonClearAllButton" Grid.Column="2"
                                         Content="Clear All"
                                         Style="{StaticResource ActionButtonStyle}"
-                                        Background="#374151" Foreground="#9CA3AF"
+                                        Background="#374151" Foreground="#B0BAC8"
                                         FontSize="12" Width="80" Height="40"
                                         Margin="8,0,0,0" Visibility="Collapsed"
                                         Click="NmonClearAll_Click"/>
@@ -1206,7 +1366,7 @@
                                     BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock Text="OUTPUT OPTIONS"
-                                               FontSize="10" FontWeight="Bold" Foreground="#3D4560"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
                                                FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,10"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -1218,7 +1378,7 @@
                                             <!-- Output directory -->
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Text="OUTPUT DIRECTORY  (blank = same as first input file)"
-                                                       Foreground="#8B93A5" FontSize="11"
+                                                       Foreground="#A8B3C8" FontSize="11"
                                                        FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -1231,7 +1391,7 @@
                                                          VerticalContentAlignment="Center"/>
                                                     <Button Grid.Column="1" Content="…"
                                                         Style="{StaticResource ActionButtonStyle}"
-                                                        Background="#374151" Foreground="#9CA3AF"
+                                                        Background="#374151" Foreground="#B0BAC8"
                                                         Width="32" Height="32" Margin="6,0,0,0"
                                                         Click="NmonOutDirBrowse_Click"/>
                                                 </Grid>
@@ -1241,7 +1401,7 @@
                                             <StackPanel Grid.Column="2">
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                                     <TextBlock Text="INTERVAL RANGE  (first / last — blank = all)"
-                                                           Foreground="#8B93A5" FontSize="11"
+                                                           Foreground="#A8B3C8" FontSize="11"
                                                            FontFamily="Segoe UI Variable, Segoe UI"
                                                            VerticalAlignment="Center"/>
                                                     <Border Width="16" Height="16" CornerRadius="8"
@@ -1285,7 +1445,7 @@
                                                          Padding="8,0" VerticalContentAlignment="Center"
                                                          ToolTip="First interval number e.g. 1"/>
                                                     <TextBlock Grid.Column="1" Text="–"
-                                                           Foreground="#4A5568" FontSize="14"
+                                                           Foreground="#7A8AA0" FontSize="14"
                                                            VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                     <TextBox x:Name="NmonIntervalLast" Grid.Column="2"
                                                          Background="#161B2A" Foreground="#CBD5E1"
@@ -1309,13 +1469,13 @@
                                     BorderThickness="1.5" CornerRadius="10" MinHeight="100" Margin="0,0,0,0">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20">
                                         <TextBlock Text="&#x2B07;" FontSize="28" HorizontalAlignment="Center"
-                                               Margin="0,0,0,8" Foreground="#2D3A5A"/>
+                                               Margin="0,0,0,8" Foreground="#4A5F88"/>
                                         <TextBlock Text="Drag &amp; drop .nmon files here"
-                                               FontSize="14" FontWeight="SemiBold" Foreground="#3D4D70"
+                                               FontSize="14" FontWeight="SemiBold" Foreground="#6B7FA8"
                                                HorizontalAlignment="Center"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
                                         <TextBlock Text="Accepts .nmon files from AIX, Linux and Power systems"
-                                               FontSize="11.5" Foreground="#252D42"
+                                               FontSize="11.5" Foreground="#6B7FA8"
                                                HorizontalAlignment="Center" Margin="0,5,0,0"
                                                FontFamily="Segoe UI Variable, Segoe UI"/>
                                     </StackPanel>
@@ -1333,7 +1493,7 @@
                                                      Margin="0,0,0,6"/>
                                         <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
                                             <TextBlock x:Name="NmonLog" Text=""
-                                                       Foreground="#8B93A5" FontSize="11.5"
+                                                       Foreground="#A8B3C8" FontSize="11.5"
                                                        FontFamily="Consolas, Segoe UI Mono, Segoe UI"
                                                        TextWrapping="Wrap"/>
                                         </ScrollViewer>
@@ -1356,7 +1516,7 @@
                                     <TextBlock Grid.Column="1"
                                            x:Name="NmonStatusLabel"
                                            Text=""
-                                           Foreground="#4A5568" FontSize="12"
+                                           Foreground="#7A8AA0" FontSize="12"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            VerticalAlignment="Center" Margin="16,0,0,0"
                                            TextWrapping="Wrap"/>
@@ -1393,7 +1553,7 @@
                                            Foreground="#E2E8F0"
                                            FontFamily="Segoe UI Variable, Segoe UI"/>
                                 <TextBlock Text="First file is always the baseline. Browse or drag &amp; drop onto each row. Add more runs with + Add Run."
-                                           FontSize="12.5" Foreground="#4A5568"
+                                           FontSize="12.5" Foreground="#7A8AA0"
                                            FontFamily="Segoe UI Variable, Segoe UI"
                                            Margin="0,5,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
@@ -1440,7 +1600,7 @@
                                         Height="42" Padding="14,0">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <TextBlock Text="File type  "
-                                                   Foreground="#8B93A5" FontSize="12.5"
+                                                   Foreground="#A8B3C8" FontSize="12.5"
                                                    FontFamily="Segoe UI Variable, Segoe UI"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock x:Name="CmpFileTypeLabel"
@@ -1459,18 +1619,36 @@
                                         Height="42" Padding="14,0" Margin="12,0,0,0">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <TextBlock Text="Mode "
-                                                   Foreground="#8B93A5" FontSize="12.5"
+                                                   Foreground="#A8B3C8" FontSize="12.5"
                                                    FontFamily="Segoe UI Variable, Segoe UI"
                                                    VerticalAlignment="Center"/>
+                                        <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                            <Border.ToolTip>
+                                                <ToolTip MaxWidth="340">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Comparison Mode" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Controls which pairs of runs are compared in the output."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="Baseline vs each run — every run is compared against Run 1. Best when you have one known-good baseline and want to track how subsequent runs changed from it."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,4,0,0" Text="Sequential — each run is compared to the one directly before it. Best for seeing incremental change between consecutive runs."/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Border.ToolTip>
+                                            <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                        </Border>
                                         <RadioButton x:Name="CmpModeAllVsBaseline"
                                                      Content="Baseline vs each run" IsChecked="True"
-                                                     Foreground="#8B93A5" FontSize="12.5"
+                                                     Foreground="#A8B3C8" FontSize="12.5"
                                                      FontFamily="Segoe UI Variable, Segoe UI"
                                                      Margin="8,0,0,0" VerticalAlignment="Center" Cursor="Hand"
                                                      ToolTip="Baseline vs Run 2, Baseline vs Run 3, Baseline vs Run 4 …"/>
                                         <RadioButton x:Name="CmpModeSequential"
                                                      Content="Sequential (each vs previous)" IsChecked="False"
-                                                     Foreground="#8B93A5" FontSize="12.5"
+                                                     Foreground="#A8B3C8" FontSize="12.5"
                                                      FontFamily="Segoe UI Variable, Segoe UI"
                                                      Margin="10,0,0,0" VerticalAlignment="Center" Cursor="Hand"
                                                      ToolTip="Baseline vs Run 2, Run 2 vs Run 3, Run 3 vs Run 4 …"/>
@@ -1483,9 +1661,27 @@
                                         Height="42" Padding="14,0" Margin="12,0,0,0">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <TextBlock Text="SLA threshold (ms) "
-                                                   Foreground="#8B93A5" FontSize="12.5"
+                                                   Foreground="#A8B3C8" FontSize="12.5"
                                                    FontFamily="Segoe UI Variable, Segoe UI"
                                                    VerticalAlignment="Center"/>
+                                        <Border Width="16" Height="16" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                            <Border.ToolTip>
+                                                <ToolTip MaxWidth="340">
+                                                    <StackPanel>
+                                                        <TextBlock Text="SLA Threshold" FontWeight="SemiBold" FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Text="Enter a response time limit in milliseconds. Any transaction whose P90 (90th percentile) in the compared run exceeds this value will be flagged as an SLA Breach in the output."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1" Margin="0,6,0,0" Text="Leave blank to skip SLA checking entirely — no breach column will appear in the output sheets."/>
+                                                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#60A5FA" Margin="0,6,0,0" Text="Example: enter 3000 to flag any transaction whose P90 exceeds 3 seconds."/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Border.ToolTip>
+                                            <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                        </Border>
                                         <TextBox x:Name="CmpSlaTextBox"
                                                  Text="" Width="70" Height="28"
                                                  Background="#0F1117" Foreground="#E2E8F0"
@@ -1495,7 +1691,7 @@
                                                  VerticalContentAlignment="Center"
                                                  Padding="6,0" VerticalAlignment="Center"/>
                                         <TextBlock Text=" — leave blank to skip"
-                                                   Foreground="#3D4560" FontSize="11.5"
+                                                   Foreground="#6B7A99" FontSize="11.5"
                                                    FontFamily="Segoe UI Variable, Segoe UI"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
@@ -1525,7 +1721,7 @@
                                                  Margin="0,0,0,6"/>
                                     <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
                                         <TextBlock x:Name="CmpLog" Text=""
-                                                   Foreground="#8B93A5" FontSize="11.5"
+                                                   Foreground="#A8B3C8" FontSize="11.5"
                                                    FontFamily="Consolas, Segoe UI Mono, Segoe UI"
                                                    TextWrapping="Wrap"/>
                                     </ScrollViewer>
