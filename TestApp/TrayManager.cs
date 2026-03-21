@@ -1,3 +1,4 @@
+using OfficeOpenXml;
 using System;
 using System.Reflection;
 using System.Windows;
@@ -123,6 +124,41 @@ namespace TestApp
                 _mainWindow.Activate();
             });
             if (_notifyIcon != null) SetProp(_notifyIcon, "Visible", false);
+        }
+
+        /// <summary>
+        /// Shows a balloon notification with the result of an auto-watch generation.
+        /// Reads pass/fail counts from the output file summary sheet if available.
+        /// </summary>
+        public void ShowWatchResult(string customerName, string outputPath)
+        {
+            if (_notifyIcon == null) return;
+
+            // Try to read pass% and fail count from the generated file
+            string body = $"{customerName} trends updated.";
+            try
+            {
+                if (System.IO.File.Exists(outputPath))
+                {
+                    using var pkg = new OfficeOpenXml.ExcelPackage(new System.IO.FileInfo(outputPath));
+                    var ws = pkg.Workbook.Worksheets.FirstOrDefault(s => s.Name == "Summary");
+                    if (ws != null)
+                    {
+                        // Row 5 = first data row: Run | Date | Total | Passed | Failed | Pass%
+                        var passVal = ws.Cells[5, 6].Value;
+                        var failVal = ws.Cells[5, 5].Value;
+                        if (passVal != null)
+                            body = $"{customerName}: {passVal} pass rate, {failVal ?? 0} failure(s)";
+                    }
+                }
+            }
+            catch { /* non-fatal — use generic message */ }
+
+            var toolTipIconType = _formsAsm?.GetType("System.Windows.Forms.ToolTipIcon");
+            var iconVal = toolTipIconType != null ? Enum.Parse(toolTipIconType, "Info") : (object)1;
+            _notifyIconType?.GetMethod("ShowBalloonTip",
+                new[] { typeof(int), typeof(string), typeof(string), toolTipIconType! })?
+                .Invoke(_notifyIcon, new[] { (object)4000, "Trends updated", body, iconVal });
         }
 
         public void UpdateTooltip(int activeWatches)

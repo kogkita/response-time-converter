@@ -4,6 +4,8 @@ using OfficeOpenXml.Drawing.Chart;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TestApp
 {
@@ -119,7 +121,11 @@ namespace TestApp
                         headerRow = r; headers = h; break;
                     }
                 }
-                if (headers == null) return null;
+                if (headers == null)
+                {
+                    Write(log, $"  SKIP {Path.GetFileName(xlsxPath)}: no required headers (Test Case Name + Status) found in first 5 rows");
+                    return null;
+                }
 
                 int colCase = Array.IndexOf(headers, "Test Case Name") + 1;
                 int colStatus = Array.IndexOf(headers, "Status") + 1;
@@ -276,18 +282,18 @@ namespace TestApp
 
                 Write(combined, $"Found {inputFiles.Count} file(s)...");
 
-                var runs = new List<TrendRun>();
-                foreach (var f in inputFiles)
+                // Parse all files in parallel — each gets its own temp file (GUID-prefixed)
+                // so concurrent reads never collide.  Log order may interleave but every
+                // file is processed independently.
+                Write(combined, $"Parsing {inputFiles.Count} file(s) in parallel...");
+                var parseTasks = inputFiles.Select(f => System.Threading.Tasks.Task.Run(() =>
                 {
                     Write(combined, $"Reading {Path.GetFileName(f)}...");
-                    var run = ParseRunFile(f, combined);
-                    if (run != null)
-                    {
+                    return ParseRunFile(f, combined);
+                })).ToList();
 
-                        runs.Add(run);
-                    }
-                    // ParseRunFile already logs the skip reason
-                }
+                var parseResults = System.Threading.Tasks.Task.WhenAll(parseTasks).GetAwaiter().GetResult();
+                var runs = parseResults.Where(r => r != null).Cast<TrendRun>().ToList();
 
                 if (runs.Count == 0)
                     return (false, "", "No valid run files could be parsed.");

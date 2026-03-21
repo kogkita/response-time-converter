@@ -2102,7 +2102,9 @@ namespace TestApp
             public DateTime? LastGenerated { get; set; } = null;
             public string?   LastOutput    { get; set; } = null;
             /// <summary>Per-customer fail window. 0 = use the global setting.</summary>
-            public int       FailWindow    { get; set; } = 0;
+            public int       FailWindow        { get; set; } = 0;
+            /// <summary>Per-customer watch interval in seconds. 0 = use the global setting.</summary>
+            public int       WatchIntervalSecs { get; set; } = 0;
         }
 
         private List<TrendsCustomer> _trendsLibrary = new();
@@ -2121,6 +2123,7 @@ namespace TestApp
                 LastGenerated = d.LastGenerated,
                 LastOutput    = d.LastOutput,
                 FailWindow    = d.FailWindow,
+                WatchIntervalSecs = d.WatchIntervalSecs,
             }).ToList();
             RefreshTrendsLibraryUI();
         }
@@ -2247,6 +2250,46 @@ namespace TestApp
                 new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB"));
             card.MouseLeave += (s, _) => ((Border)s).BorderBrush =
                 new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E2640"));
+
+            // Right-click context menu
+            var menu = new ContextMenu();
+            menu.Style = null;
+            var menuGenerate = new MenuItem { Header = "Generate Trends" };
+            menuGenerate.Click += (s, ev) =>
+            {
+                LoadTrendsCustomer(customer);
+                RunTrendsGeneration(silent: false);
+            };
+            var menuOpen = new MenuItem
+            {
+                Header    = "Open Last Output",
+                IsEnabled = !string.IsNullOrEmpty(customer.LastOutput)
+                         && System.IO.File.Exists(customer.LastOutput)
+            };
+            menuOpen.Click += (s, ev) =>
+            {
+                if (!string.IsNullOrEmpty(customer.LastOutput) && System.IO.File.Exists(customer.LastOutput))
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        { FileName = customer.LastOutput, UseShellExecute = true });
+            };
+            var menuExport = new MenuItem { Header = "Export this customer..." };
+            menuExport.Click += (s, ev) => ExportSingleCustomer(customer);
+            var menuDelete = new MenuItem { Header = "Delete" };
+            menuDelete.Click += (s, ev) =>
+            {
+                if (!DarkMessageBox.Confirm($"Remove '{customer.Name}' from library?", "Remove Customer")) return;
+                _trendsLibrary.Remove(customer);
+                SaveTrendsLibrary();
+                RefreshTrendsLibraryUI();
+            };
+            menu.Items.Add(menuGenerate);
+            menu.Items.Add(menuOpen);
+            menu.Items.Add(new Separator());
+            menu.Items.Add(menuExport);
+            menu.Items.Add(new Separator());
+            menu.Items.Add(menuDelete);
+            card.ContextMenu = menu;
+
             return card;
         }
 
@@ -2309,6 +2352,7 @@ namespace TestApp
             existing.ReportsFolder = _trendsReportsFolder ?? "";
             existing.FailWindow    = int.TryParse(TrendsFailWindowBox.Text.Trim(), out int ufv) && ufv >= 1
                 ? ufv : 0;
+            // WatchIntervalSecs is edited via the Settings page; preserve existing value here
 
             SaveTrendsLibrary();
             RefreshTrendsLibraryUI();
@@ -2346,6 +2390,7 @@ namespace TestApp
                     RunsFolder    = _trendsRunsFolder,
                     ReportsFolder = _trendsReportsFolder ?? "",
                     FailWindow    = addFw,
+                    WatchIntervalSecs = 0,
                 });
             }
             SaveTrendsLibrary();
@@ -2674,8 +2719,9 @@ namespace TestApp
 
             TrendsManifest.Delete(customer.RunsFolder);
 
-            int intervalSecs = _settings.TrendsWatchIntervalSecs > 0
-                ? _settings.TrendsWatchIntervalSecs : 60;
+            int intervalSecs = customer.WatchIntervalSecs > 0
+                ? customer.WatchIntervalSecs
+                : (_settings.TrendsWatchIntervalSecs > 0 ? _settings.TrendsWatchIntervalSecs : 60);
 
             var timer = new System.Windows.Threading.DispatcherTimer
             {
@@ -2807,8 +2853,9 @@ namespace TestApp
                 return;
             }
 
-            int intervalSecs = _settings.TrendsWatchIntervalSecs > 0
-                ? _settings.TrendsWatchIntervalSecs : 60;
+            int intervalSecs = customer.WatchIntervalSecs > 0
+                ? customer.WatchIntervalSecs
+                : (_settings.TrendsWatchIntervalSecs > 0 ? _settings.TrendsWatchIntervalSecs : 60);
 
             bool isCurrent = IsCurrentCustomer(customer);
             if (isCurrent)
@@ -2867,9 +2914,12 @@ namespace TestApp
                             TrendsStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
                         }
 
-                        // Show balloon tip for background customers
+                        // Show balloon tip with pass% and fail count
                         if (!isCurrent || !IsVisible)
+                        {
                             _tray?.UpdateTooltip(_watchTimers.Count);
+                            _tray?.ShowWatchResult(name, outputPath);
+                        }
                     }
                     else
                     {
@@ -3089,6 +3139,7 @@ namespace TestApp
                 Id = c.Id, Name = c.Name, RunsFolder = c.RunsFolder,
                 ReportsFolder = c.ReportsFolder, LastGenerated = c.LastGenerated, LastOutput = c.LastOutput,
                 FailWindow = c.FailWindow,
+                WatchIntervalSecs = c.WatchIntervalSecs,
             }).ToList();
 
             bool ok = AppDataManager.ExportTrendsLibrary(dtos, dlg.FileName);
@@ -3112,6 +3163,7 @@ namespace TestApp
                 Id = c.Id, Name = c.Name, RunsFolder = c.RunsFolder,
                 ReportsFolder = c.ReportsFolder, LastGenerated = c.LastGenerated, LastOutput = c.LastOutput,
                 FailWindow = c.FailWindow,
+                WatchIntervalSecs = c.WatchIntervalSecs,
             }).ToList();
 
             var (imported, error) = AppDataManager.ImportTrendsLibrary(dlg.FileName, existingDtos);
@@ -3137,6 +3189,7 @@ namespace TestApp
                     Id = dto.Id, Name = dto.Name, RunsFolder = dto.RunsFolder,
                     ReportsFolder = dto.ReportsFolder, LastGenerated = dto.LastGenerated,
                     LastOutput = dto.LastOutput, FailWindow = dto.FailWindow,
+                    WatchIntervalSecs = dto.WatchIntervalSecs,
                 });
 
             SaveTrendsLibrary();
@@ -3228,6 +3281,32 @@ namespace TestApp
             TrendsStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
         }
 
+        // ── Export single customer ───────────────────────────────────────────
+
+        private void ExportSingleCustomer(TrendsCustomer customer)
+        {
+            var dlg = new SaveFileDialog
+            {
+                Title    = $"Export {customer.Name}",
+                Filter   = "JSON (*.json)|*.json",
+                FileName = $"{customer.Name}_TrendsConfig_{DateTime.Now:yyyyMMdd}.json"
+            };
+            if (dlg.ShowDialog() != true) return;
+
+            var dto = new AppDataManager.TrendsCustomerDto
+            {
+                Id = customer.Id, Name = customer.Name,
+                RunsFolder = customer.RunsFolder, ReportsFolder = customer.ReportsFolder,
+                LastGenerated = customer.LastGenerated, LastOutput = customer.LastOutput,
+                FailWindow = customer.FailWindow, WatchIntervalSecs = customer.WatchIntervalSecs,
+            };
+            bool ok = AppDataManager.ExportTrendsLibrary(new List<AppDataManager.TrendsCustomerDto> { dto }, dlg.FileName);
+            if (ok)
+                DarkMessageBox.Show($"Exported {customer.Name} to:\n{dlg.FileName}", "Export Complete");
+            else
+                DarkMessageBox.Show("Export failed — could not write the file.", "Export Failed");
+        }
+
         // ── Global Export / Import ────────────────────────────────────────────
 
         private void GlobalExport_Click(object sender, RoutedEventArgs e)
@@ -3247,6 +3326,7 @@ namespace TestApp
                 Id = c.Id, Name = c.Name, RunsFolder = c.RunsFolder,
                 ReportsFolder = c.ReportsFolder, LastGenerated = c.LastGenerated, LastOutput = c.LastOutput,
                 FailWindow = c.FailWindow,
+                WatchIntervalSecs = c.WatchIntervalSecs,
             }).ToList();
 
             bool ok = AppDataManager.ExportAll(_library, dtos, _settings, dlg.FileName);
@@ -3273,6 +3353,7 @@ namespace TestApp
                 Id = c.Id, Name = c.Name, RunsFolder = c.RunsFolder,
                 ReportsFolder = c.ReportsFolder, LastGenerated = c.LastGenerated, LastOutput = c.LastOutput,
                 FailWindow = c.FailWindow,
+                WatchIntervalSecs = c.WatchIntervalSecs,
             }).ToList();
 
             var result = AppDataManager.ImportAll(dlg.FileName, _library, existingDtos);

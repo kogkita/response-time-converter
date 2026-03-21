@@ -158,7 +158,11 @@ namespace TestApp
             /// <summary>
             /// Per-customer fail window override. 0 = use the global setting.
             /// </summary>
-            public int       FailWindow     { get; set; } = 0;
+            public int       FailWindow         { get; set; } = 0;
+            /// <summary>
+            /// Per-customer watch interval override in seconds. 0 = use global setting.
+            /// </summary>
+            public int       WatchIntervalSecs  { get; set; } = 0;
         }
 
         public static List<TrendsCustomerDto> LoadTrendsLibrary()
