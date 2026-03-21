@@ -29,6 +29,7 @@ namespace TestApp
                 _isManuallyMaximized = true;
                 ApplyMaximizedLayout();
                 LoadLibrary();
+                LoadTrendsLibrary();
                 DarkMessageBox.SetOwner(this);
             };
         }
@@ -139,12 +140,16 @@ namespace TestApp
             PageBLG.Visibility          = Visibility.Collapsed;
             PageNmon.Visibility         = Visibility.Collapsed;
             PageCompare.Visibility      = Visibility.Collapsed;
-            PageScriptRunner.Visibility = Visibility.Collapsed;
+            PageScriptRunner.Visibility   = Visibility.Collapsed;
+            PageTestRunTrends.Visibility  = Visibility.Collapsed;
             page.Visibility = Visibility.Visible;
         }
 
         private void NavScriptRunner_Click(object sender, RoutedEventArgs e)
             => SetActivePage(NavScriptRunner, PageScriptRunner);
+
+        private void NavTestRunTrends_Click(object sender, RoutedEventArgs e)
+            => SetActivePage(NavTestRunTrends, PageTestRunTrends);
 
         private void NavConvert_Click(object sender, RoutedEventArgs e)
             => SetActivePage(NavConvert, PageConvert);
@@ -2028,6 +2033,318 @@ namespace TestApp
                 System.IO.File.AppendAllText(_saveLogPath, header);
             }
             catch { }
+        }
+
+        // ── Test Run Trends ───────────────────────────────────────────────────
+
+        private static readonly string TrendsLibraryPath = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "PerformanceTestUtilities", "trends_library.json");
+
+        private class TrendsCustomer
+        {
+            public string Id          { get; set; } = Guid.NewGuid().ToString("N")[..8];
+            public string Name        { get; set; } = "";
+            public string RunsFolder  { get; set; } = "";
+            public string ReportsFolder { get; set; } = "";
+            public DateTime? LastGenerated { get; set; } = null;
+            public string?   LastOutput    { get; set; } = null;
+        }
+
+        private List<TrendsCustomer> _trendsLibrary = new();
+        private string? _trendsRunsFolder    = null;
+        private string? _trendsReportsFolder = null;
+
+        private void LoadTrendsLibrary()
+        {
+            try
+            {
+                if (System.IO.File.Exists(TrendsLibraryPath))
+                {
+                    var json = System.IO.File.ReadAllText(TrendsLibraryPath);
+                    _trendsLibrary = System.Text.Json.JsonSerializer.Deserialize<List<TrendsCustomer>>(json)
+                                     ?? new();
+                }
+            }
+            catch { _trendsLibrary = new(); }
+            RefreshTrendsLibraryUI();
+        }
+
+        private void SaveTrendsLibrary()
+        {
+            try
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TrendsLibraryPath)!);
+                var json = System.Text.Json.JsonSerializer.Serialize(_trendsLibrary,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                System.IO.File.WriteAllText(TrendsLibraryPath, json);
+            }
+            catch { }
+        }
+
+        private void RefreshTrendsLibraryUI()
+        {
+            TrendsLibraryPanel.Children.Clear();
+            TrendsLibraryEmptyLabel.Visibility = _trendsLibrary.Count == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+
+            foreach (var customer in _trendsLibrary.OrderBy(c => c.Name))
+                TrendsLibraryPanel.Children.Add(BuildTrendsCard(customer));
+        }
+
+        private UIElement BuildTrendsCard(TrendsCustomer customer)
+        {
+            var card = new Border
+            {
+                Background      = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0D1020")),
+                BorderBrush     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E2640")),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(6),
+                Margin          = new Thickness(2, 2, 2, 2),
+                Padding         = new Thickness(10, 8, 10, 8),
+                Cursor          = System.Windows.Input.Cursors.Hand,
+                Tag             = customer
+            };
+
+            var outer = new Grid();
+            outer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            outer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var stack = new StackPanel();
+
+            // Customer name
+            stack.Children.Add(new TextBlock
+            {
+                Text       = customer.Name,
+                FontSize   = 12.5, FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0")),
+                FontFamily = new FontFamily("Segoe UI Variable, Segoe UI"),
+                Margin     = new Thickness(0, 0, 0, 3)
+            });
+
+            // Runs folder
+            stack.Children.Add(new TextBlock
+            {
+                Text       = "Runs: " + (string.IsNullOrEmpty(customer.RunsFolder) ? "—"
+                    : System.IO.Path.GetFileName(customer.RunsFolder.TrimEnd('\\', '/')) == ""
+                        ? customer.RunsFolder : "…\\" + System.IO.Path.GetFileName(customer.RunsFolder.TrimEnd('\\', '/'))),
+                FontSize   = 10.5, Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6B7A99")),
+                FontFamily = new FontFamily("Segoe UI Variable, Segoe UI"),
+                ToolTip    = customer.RunsFolder
+            });
+
+            // Reports folder
+            stack.Children.Add(new TextBlock
+            {
+                Text       = "Reports: " + (string.IsNullOrEmpty(customer.ReportsFolder) ? "same as Runs"
+                    : "…\\" + System.IO.Path.GetFileName(customer.ReportsFolder.TrimEnd('\\', '/'))),
+                FontSize   = 10.5, Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6B7A99")),
+                FontFamily = new FontFamily("Segoe UI Variable, Segoe UI"),
+                ToolTip    = customer.ReportsFolder
+            });
+
+            // Last generated
+            if (customer.LastGenerated.HasValue)
+                stack.Children.Add(new TextBlock
+                {
+                    Text       = $"Last: {customer.LastGenerated.Value:dd MMM yyyy HH:mm}",
+                    FontSize   = 10, Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4A5F88")),
+                    FontFamily = new FontFamily("Segoe UI Variable, Segoe UI"),
+                    Margin     = new Thickness(0, 3, 0, 0)
+                });
+
+            Grid.SetColumn(stack, 0);
+            outer.Children.Add(stack);
+
+            // Delete button
+            var delBtn = new Button
+            {
+                Content         = new TextBlock { Text = "Del", FontSize = 9, FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F87171")),
+                    FontFamily = new FontFamily("Segoe UI Variable, Segoe UI") },
+                Width = 38, Height = 20,
+                Background      = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D0F0F")),
+                BorderBrush     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5C1A1A")),
+                BorderThickness = new Thickness(1),
+                Cursor          = System.Windows.Input.Cursors.Hand,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin          = new Thickness(4, 0, 0, 0),
+                Tag             = customer
+            };
+            delBtn.Click += (s, ev) =>
+            {
+                ev.Handled = true;
+                var c = (TrendsCustomer)((Button)s).Tag;
+                if (!DarkMessageBox.Confirm($"Remove '{c.Name}' from library?", "Remove Customer")) return;
+                _trendsLibrary.Remove(c);
+                SaveTrendsLibrary();
+                RefreshTrendsLibraryUI();
+            };
+            Grid.SetColumn(delBtn, 1);
+            outer.Children.Add(delBtn);
+
+            card.Child = outer;
+            card.MouseLeftButtonUp += (s, _) => LoadTrendsCustomer((TrendsCustomer)((Border)s).Tag);
+            card.MouseEnter += (s, _) => ((Border)s).BorderBrush =
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB"));
+            card.MouseLeave += (s, _) => ((Border)s).BorderBrush =
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E2640"));
+            return card;
+        }
+
+        private void LoadTrendsCustomer(TrendsCustomer c)
+        {
+            TrendsCustomerNameBox.Text = c.Name;
+            _trendsRunsFolder    = c.RunsFolder;
+            _trendsReportsFolder = c.ReportsFolder;
+            TrendsRunsFolderLabel.Text = string.IsNullOrEmpty(c.RunsFolder) ? "Not set" : c.RunsFolder;
+            TrendsRunsFolderLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                string.IsNullOrEmpty(c.RunsFolder) ? "#4A5F88" : "#CBD5E1"));
+            TrendsReportsFolderLabel.Text = string.IsNullOrEmpty(c.ReportsFolder) ? "Same as Runs folder" : c.ReportsFolder;
+            TrendsReportsFolderLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                string.IsNullOrEmpty(c.ReportsFolder) ? "#4A5F88" : "#CBD5E1"));
+            UpdateTrendsFilesCount();
+        }
+
+        private void TrendsLibraryAdd_Click(object sender, RoutedEventArgs e)
+        {
+            string name = TrendsCustomerNameBox.Text.Trim();
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(_trendsRunsFolder))
+            {
+                DarkMessageBox.Show("Enter a customer name and select the Runs folder first.",
+                    "Missing Info");
+                return;
+            }
+            var existing = _trendsLibrary.FirstOrDefault(c =>
+                c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                existing.RunsFolder     = _trendsRunsFolder;
+                existing.ReportsFolder  = _trendsReportsFolder ?? "";
+            }
+            else
+            {
+                _trendsLibrary.Add(new TrendsCustomer
+                {
+                    Name          = name,
+                    RunsFolder    = _trendsRunsFolder,
+                    ReportsFolder = _trendsReportsFolder ?? ""
+                });
+            }
+            SaveTrendsLibrary();
+            RefreshTrendsLibraryUI();
+            TrendsStatusLabel.Text = $"'{name}' saved to library.";
+            TrendsStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
+        }
+
+        private string BrowseFolder(string title)
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = title, Filter = "Folder|*.folder", FileName = "Select Folder",
+                CheckFileExists = false, CheckPathExists = true, ValidateNames = false
+            };
+            return dlg.ShowDialog() == true
+                ? System.IO.Path.GetDirectoryName(dlg.FileName) ?? ""
+                : "";
+        }
+
+        private void TrendsRunsFolderBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            string f = BrowseFolder("Select Runs folder (contains monthly Excel files)");
+            if (string.IsNullOrEmpty(f)) return;
+            _trendsRunsFolder = f;
+            TrendsRunsFolderLabel.Text = f;
+            TrendsRunsFolderLabel.Foreground = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString("#CBD5E1"));
+            if (string.IsNullOrWhiteSpace(TrendsCustomerNameBox.Text))
+                TrendsCustomerNameBox.Text = System.IO.Path.GetFileName(
+                    System.IO.Path.GetDirectoryName(f.TrimEnd('\\', '/')) ?? f);
+            UpdateTrendsFilesCount();
+        }
+
+        private void TrendsReportsFolderBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            string f = BrowseFolder("Select Reports folder (where Trends.xlsx will be saved)");
+            if (string.IsNullOrEmpty(f)) return;
+            _trendsReportsFolder = f;
+            TrendsReportsFolderLabel.Text = f;
+            TrendsReportsFolderLabel.Foreground = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString("#CBD5E1"));
+        }
+
+        private void UpdateTrendsFilesCount()
+        {
+            if (string.IsNullOrEmpty(_trendsRunsFolder) || !System.IO.Directory.Exists(_trendsRunsFolder))
+            { TrendsFilesFoundLabel.Text = ""; return; }
+            int count = System.IO.Directory.GetFiles(_trendsRunsFolder, "*.xlsx")
+                .Count(f => !System.IO.Path.GetFileName(f).EndsWith("_Trends.xlsx",
+                    StringComparison.OrdinalIgnoreCase));
+            TrendsFilesFoundLabel.Text = $"{count} run file(s) found in Runs folder.";
+        }
+
+        private void TrendsRun_Click(object sender, RoutedEventArgs e)
+        {
+            string name = TrendsCustomerNameBox.Text.Trim();
+            if (string.IsNullOrEmpty(name))
+            { DarkMessageBox.Show("Enter a customer name.", "Required"); return; }
+            if (string.IsNullOrEmpty(_trendsRunsFolder) || !System.IO.Directory.Exists(_trendsRunsFolder))
+            { DarkMessageBox.Show("Select a valid Runs folder.", "Required"); return; }
+
+            if (!int.TryParse(TrendsFailWindowBox.Text.Trim(), out int failWindow) || failWindow < 1)
+                failWindow = 3;
+
+            string reportsFolder = string.IsNullOrEmpty(_trendsReportsFolder)
+                ? _trendsRunsFolder : _trendsReportsFolder;
+
+            TrendsLogPanel.Visibility = Visibility.Visible;
+            TrendsProgress.Visibility = Visibility.Visible;
+            TrendsLog.Text = "";
+            TrendsRunBtn.IsEnabled = false;
+            TrendsStatusLabel.Text = "Generating...";
+            TrendsStatusLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#60A5FA"));
+
+            string runsFolder = _trendsRunsFolder;
+            int fw = failWindow;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                TestRunTrendsProcessor.Log = msg =>
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (TrendsLog.Text.Length > 0) TrendsLog.Text += "\n";
+                        TrendsLog.Text += $"[{DateTime.Now:HH:mm:ss}]  {msg}";
+                    });
+
+                var (ok, outputPath, error) =
+                    TestRunTrendsProcessor.Generate(runsFolder, name, reportsFolder, fw);
+
+                Dispatcher.Invoke(() =>
+                {
+                    TrendsProgress.Visibility = Visibility.Collapsed;
+                    TrendsRunBtn.IsEnabled    = true;
+                    if (ok)
+                    {
+                        // Update library entry
+                        var entry = _trendsLibrary.FirstOrDefault(c =>
+                            c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                        if (entry != null)
+                        { entry.LastGenerated = DateTime.Now; entry.LastOutput = outputPath; }
+                        SaveTrendsLibrary();
+                        RefreshTrendsLibraryUI();
+
+                        TrendsStatusLabel.Text = $"Saved to {System.IO.Path.GetFileName(outputPath)}";
+                        TrendsStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
+                        if (DarkMessageBox.Confirm($"Done:\n{outputPath}\n\nOpen it now?", "Trends Generated"))
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                                { FileName = outputPath, UseShellExecute = true });
+                    }
+                    else
+                    {
+                        TrendsStatusLabel.Text = $"Failed: {error}";
+                        TrendsStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
+                    }
+                });
+            });
         }
 
         // ── Log panel helpers ─────────────────────────────────

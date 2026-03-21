@@ -385,6 +385,23 @@
                             </Button>
                         </StackPanel>
 
+                        <!-- ── Automation Testing group ── -->
+                        <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,8"/>
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="AUTOMATION TESTING"
+                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                   FontFamily="Segoe UI Variable, Segoe UI" Margin="20,4,0,4"/>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
+                            <Button x:Name="NavTestRunTrends"
+                                    Style="{StaticResource NavButtonStyle}"
+                                    Click="NavTestRunTrends_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#x1F4C8;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Test Run Trends" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
                         <TextBlock DockPanel.Dock="Bottom"
                                    Text="v1.2.0"
                                    FontSize="11"
@@ -2112,6 +2129,290 @@
                                         </Grid>
                                     </Grid>
 
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+
+
+                    <!-- ══ TEST RUN TRENDS PAGE ══ -->
+                    <Grid x:Name="PageTestRunTrends" Visibility="Collapsed">
+                        <Grid Margin="36,28,36,28">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Heading -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                <TextBlock Text="Test Run Trends"
+                                           FontSize="21" FontWeight="SemiBold" Foreground="#E2E8F0"
+                                           FontFamily="Segoe UI Variable, Segoe UI"/>
+                                <TextBlock Text="Save customer configurations to the library for one-click trend generation."
+                                           FontSize="12.5" Foreground="#7A8AA0"
+                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                           Margin="0,4,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <!-- Two-column body -->
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- LEFT: Customer Library -->
+                                <Grid Grid.Column="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="CUSTOMER LIBRARY"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="+ Add"
+                                                x:Name="TrendsLibraryAddBtn"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#1E2640" Foreground="#60A5FA"
+                                                FontSize="10" FontWeight="SemiBold"
+                                                Height="24" Padding="8,0"
+                                                Click="TrendsLibraryAdd_Click"/>
+                                    </Grid>
+                                    <Border Grid.Row="1" Background="#0A0D18" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="4">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="TrendsLibraryPanel"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                    <TextBlock Grid.Row="1"
+                                               x:Name="TrendsLibraryEmptyLabel"
+                                               Text="No customers yet.&#x0a;Click + Add to configure&#x0a;your first customer."
+                                               Foreground="#3D4D70" FontSize="11.5"
+                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               IsHitTestVisible="False"/>
+                                </Grid>
+
+                                <!-- RIGHT: Config + Log -->
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Config panel -->
+                                    <Border Grid.Row="0" Background="#0D1020" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Customer name + Fail window row -->
+                                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="16"/>
+                                                    <ColumnDefinition Width="140"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="CUSTOMER NAME"
+                                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                               FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                    <TextBox x:Name="TrendsCustomerNameBox"
+                                                             Background="#161B2A" Foreground="#CBD5E1"
+                                                             BorderBrush="#252D42" FontSize="13" Height="34"
+                                                             Padding="10,0" VerticalContentAlignment="Center"
+                                                             FontFamily="Segoe UI Variable, Segoe UI"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                        <TextBlock Text="FAIL WINDOW"
+                                                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Border Width="15" Height="15" CornerRadius="8"
+                                                                Background="#1E2640" Margin="6,0,0,0"
+                                                                VerticalAlignment="Center" Cursor="Help">
+                                                            <Border.ToolTip>
+                                                                <ToolTip MaxWidth="280">
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                               Text="Number of most recent runs to count failures in column B. E.g. 3 means: how many times did this test fail in the last 3 runs?"/>
+                                                                </ToolTip>
+                                                            </Border.ToolTip>
+                                                            <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBox x:Name="TrendsFailWindowBox"
+                                                             Text="3"
+                                                             Background="#161B2A" Foreground="#CBD5E1"
+                                                             BorderBrush="#252D42" FontSize="13" Height="34"
+                                                             Padding="10,0" VerticalContentAlignment="Center"
+                                                             FontFamily="Consolas, Segoe UI Mono"
+                                                             TextAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Two folders row -->
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="16"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Runs folder -->
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                        <TextBlock Text="RUNS FOLDER"
+                                                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Border Width="15" Height="15" CornerRadius="8"
+                                                                Background="#1E2640" Margin="6,0,0,0"
+                                                                VerticalAlignment="Center" Cursor="Help">
+                                                            <Border.ToolTip>
+                                                                <ToolTip MaxWidth="260">
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                               Text="Folder containing the monthly run Excel files (e.g. KES\Runs\). All .xlsx files here will be included in the trend."/>
+                                                                </ToolTip>
+                                                            </Border.ToolTip>
+                                                            <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                                                BorderThickness="1" CornerRadius="6" Height="32">
+                                                            <TextBlock x:Name="TrendsRunsFolderLabel"
+                                                                       Text="Not set"
+                                                                       Foreground="#4A5F88" FontSize="11"
+                                                                       FontFamily="Consolas, Segoe UI Mono"
+                                                                       VerticalAlignment="Center" Padding="8,0"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                        </Border>
+                                                        <Button Grid.Column="1" Content="…"
+                                                                Style="{StaticResource ActionButtonStyle}"
+                                                                Background="#374151" Foreground="#B0BAC8"
+                                                                Width="32" Height="32" Margin="6,0,0,0"
+                                                                Click="TrendsRunsFolderBrowse_Click"/>
+                                                    </Grid>
+                                                </StackPanel>
+
+                                                <!-- Reports folder -->
+                                                <StackPanel Grid.Column="2">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                        <TextBlock Text="REPORTS FOLDER"
+                                                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Border Width="15" Height="15" CornerRadius="8"
+                                                                Background="#1E2640" Margin="6,0,0,0"
+                                                                VerticalAlignment="Center" Cursor="Help">
+                                                            <Border.ToolTip>
+                                                                <ToolTip MaxWidth="260">
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                               Text="Folder where CustomerName_Trends.xlsx will be saved (e.g. KES\Reports\). Defaults to Runs folder if left blank."/>
+                                                                </ToolTip>
+                                                            </Border.ToolTip>
+                                                            <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                       Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                                                BorderThickness="1" CornerRadius="6" Height="32">
+                                                            <TextBlock x:Name="TrendsReportsFolderLabel"
+                                                                       Text="Same as Runs folder"
+                                                                       Foreground="#4A5F88" FontSize="11"
+                                                                       FontFamily="Consolas, Segoe UI Mono"
+                                                                       VerticalAlignment="Center" Padding="8,0"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                        </Border>
+                                                        <Button Grid.Column="1" Content="…"
+                                                                Style="{StaticResource ActionButtonStyle}"
+                                                                Background="#374151" Foreground="#B0BAC8"
+                                                                Width="32" Height="32" Margin="6,0,0,0"
+                                                                Click="TrendsReportsFolderBrowse_Click"/>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Files found hint -->
+                                            <TextBlock Grid.Row="2"
+                                                       x:Name="TrendsFilesFoundLabel"
+                                                       Text="" Foreground="#4A5F88" FontSize="11"
+                                                       FontFamily="Segoe UI Variable, Segoe UI"
+                                                       Margin="0,8,0,0"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Log panel -->
+                                    <Border Grid.Row="1" Background="#060810" BorderBrush="#1A2030"
+                                            BorderThickness="1" CornerRadius="8" Padding="12,10"
+                                            Visibility="Collapsed" x:Name="TrendsLogPanel">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <ProgressBar x:Name="TrendsProgress" Height="3"
+                                                         Background="#1A2030" Foreground="#2563EB"
+                                                         BorderThickness="0" IsIndeterminate="True" Margin="0,0,0,6"/>
+                                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                                <TextBlock x:Name="TrendsLog" Text=""
+                                                           Foreground="#A8B3C8" FontSize="11.5"
+                                                           FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                                           TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                            </ScrollViewer>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Run button -->
+                                    <Grid Grid.Row="2" Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button x:Name="TrendsRunBtn" Grid.Column="0"
+                                                Content="&#x1F4C8;  Generate Trends"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#2563EB" Foreground="White"
+                                                FontSize="14" FontWeight="SemiBold"
+                                                Width="200" Height="42"
+                                                Click="TrendsRun_Click"/>
+                                        <TextBlock x:Name="TrendsStatusLabel" Grid.Column="1"
+                                                   Text="" Foreground="#7A8AA0" FontSize="12"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   VerticalAlignment="Center" Margin="16,0,0,0"
+                                                   TextWrapping="Wrap"/>
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
