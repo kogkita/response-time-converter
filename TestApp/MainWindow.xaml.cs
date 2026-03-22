@@ -34,6 +34,7 @@ namespace TestApp
                 InitTrayOnLoad();
                 DarkMessageBox.SetOwner(this);
                 Task.Run(CleanOrphanTempFiles); // clean up any leftover temp files from last session
+                InitScriptParamPanel();
             };
         }
 
@@ -1755,15 +1756,6 @@ namespace TestApp
                 SetScriptFile(dlg.FileName);
         }
 
-        private void ScriptFileClear_Click(object sender, RoutedEventArgs e)
-        {
-            _scriptFilePath = null;
-            ScriptFileLabel.Text = "No script selected — browse or drag & drop here";
-            ScriptFileLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6B7FA8"));
-            ScriptFileClearBtn.Visibility = Visibility.Collapsed;
-            ScriptTypeLabel.Text = "None";
-            ScriptTypeBadge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E2640"));
-        }
 
         private void ScriptFile_Drop(object sender, DragEventArgs e)
         {
@@ -1786,41 +1778,6 @@ namespace TestApp
         {
             if (sender is Border b)
                 b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#252D42"));
-        }
-
-        private void SetScriptFile(string path)
-        {
-            _scriptFilePath = path;
-            ScriptFileLabel.Text = path;
-            ScriptFileLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CBD5E1"));
-            ScriptFileClearBtn.Visibility = Visibility.Visible;
-
-            // Update default log path if save log is checked and user hasn't manually set a path
-            if (SaveLogCheckbox.IsChecked == true)
-            {
-                _saveLogPath = System.IO.Path.Combine(
-                    System.IO.Path.GetDirectoryName(path) ?? "",
-                    System.IO.Path.GetFileNameWithoutExtension(path) + "_run.log");
-                SaveLogPathLabel.Text = _saveLogPath;
-            }
-
-            string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-            if (ScriptTypes.TryGetValue(ext, out var info))
-            {
-                ScriptTypeLabel.Text = info.Label;
-                ScriptTypeBadge.Background = new SolidColorBrush(
-                    (Color)ColorConverter.ConvertFromString("#1E2640"));
-                ScriptTypeLabel.Foreground = new SolidColorBrush(
-                    (Color)ColorConverter.ConvertFromString(info.Color));
-            }
-            else
-            {
-                ScriptTypeLabel.Text = "Unknown";
-                ScriptTypeLabel.Foreground = new SolidColorBrush(
-                    (Color)ColorConverter.ConvertFromString("#F87171"));
-            }
-
-            MarkScriptEntryDirty();
         }
 
         private void ScriptField_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -1890,162 +1847,6 @@ namespace TestApp
             row.Children.Add(valBox);
             row.Children.Add(removeBtn);
             ScriptEnvVarPanel.Children.Add(row);
-        }
-
-        private void ScriptRun_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_scriptFilePath) || !System.IO.File.Exists(_scriptFilePath))
-            {
-                DarkMessageBox.Show("Please select a script file first.",
-                    "No Script");
-                return;
-            }
-
-            string ext = System.IO.Path.GetExtension(_scriptFilePath).ToLowerInvariant();
-
-            // Resolve runtime
-            string runtime, argsPrefix;
-            string runtimeOverride = ScriptRuntimeBox.Text.Trim();
-            if (!string.IsNullOrEmpty(runtimeOverride))
-            {
-                // User override — split into exe + any flags
-                var parts = runtimeOverride.Split(' ', 2);
-                runtime = parts[0];
-                argsPrefix = parts.Length > 1 ? parts[1] : "";
-            }
-            else if (ScriptTypes.TryGetValue(ext, out var info))
-            {
-                runtime = info.Runtime;
-                argsPrefix = info.ArgsPrefix;
-            }
-            else
-            {
-                DarkMessageBox.Show($"Unknown script type '{ext}'.\nEnter a runtime in the Runtime Override field.",
-                    "Unknown Type");
-                return;
-            }
-
-            string userArgs   = ScriptArgsBox.Text.Trim();
-            string scriptPath = _scriptFilePath;
-            string workDir    = ScriptWorkDirBox.Text.Trim();
-            if (string.IsNullOrEmpty(workDir))
-                workDir = System.IO.Path.GetDirectoryName(scriptPath) ?? "";
-
-            // Build full argument string
-            string fullArgs = string.IsNullOrEmpty(argsPrefix)
-                ? $"\"{scriptPath}\" {userArgs}".Trim()
-                : $"{argsPrefix} \"{scriptPath}\" {userArgs}".Trim();
-
-            // Collect env vars
-            var envVars = new Dictionary<string, string>();
-            foreach (var child in ScriptEnvVarPanel.Children)
-            {
-                if (child is Grid row && row.Children.Count >= 2)
-                {
-                    var k = (row.Children[0] as TextBox)?.Text?.Trim() ?? "";
-                    var v = (row.Children[1] as TextBox)?.Text?.Trim() ?? "";
-                    if (!string.IsNullOrEmpty(k)) envVars[k] = v;
-                }
-            }
-
-            // Show log panel
-            ScriptLogPanel.Visibility = Visibility.Visible;
-            ScriptLog.Text = "";
-            ScriptProgress.Visibility = Visibility.Visible;
-            SaveLogAfterRunBtn.Visibility = Visibility.Collapsed;
-            ScriptExitCodeLabel.Text = "";
-            ScriptRunBtn.IsEnabled = false;
-            ScriptStopBtn.Visibility = Visibility.Visible;
-            ScriptStatusLabel.Text = $"Running {System.IO.Path.GetFileName(scriptPath)}…";
-            ScriptStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0xA5, 0xFA));
-
-            AppendScriptLog($"▶ {runtime} {fullArgs}", "#60A5FA");
-            WriteLogHeader();
-            AppendScriptLog($"  Working dir: {workDir}\n", "#6B7A99");
-
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                try
-                {
-                    var psi = new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName  = runtime,
-                        Arguments = fullArgs,
-                        WorkingDirectory       = workDir,
-                        UseShellExecute        = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError  = true,
-                        CreateNoWindow         = true,
-                    };
-
-                    // Inject env vars
-                    foreach (var kv in envVars)
-                        psi.EnvironmentVariables[kv.Key] = kv.Value;
-
-                    // Auto-set UTF-8 output for Python to avoid cp1252 encoding errors on Windows
-                    if (ext == ".py" && !psi.EnvironmentVariables.ContainsKey("PYTHONIOENCODING"))
-                        psi.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
-
-                    _scriptProcess = new System.Diagnostics.Process { StartInfo = psi, EnableRaisingEvents = true };
-
-                    _scriptProcess.OutputDataReceived += (s, ev) =>
-                    {
-                        if (ev.Data != null)
-                            Dispatcher.Invoke(() => AppendScriptLog(ev.Data, "#A8B3C8"));
-                    };
-                    _scriptProcess.ErrorDataReceived += (s, ev) =>
-                    {
-                        if (ev.Data != null)
-                            Dispatcher.Invoke(() => AppendScriptLog(ev.Data, "#F87171"));
-                    };
-
-                    _scriptProcess.Start();
-                    _scriptProcess.BeginOutputReadLine();
-                    _scriptProcess.BeginErrorReadLine();
-                    _scriptProcess.WaitForExit();
-
-                    int code = _scriptProcess.ExitCode;
-                    _scriptProcess = null;
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        ScriptProgress.Visibility = Visibility.Collapsed;
-                        ScriptRunBtn.IsEnabled = true;
-                        ScriptStopBtn.Visibility = Visibility.Collapsed;
-
-                        bool ok = code == 0;
-                        ScriptExitCodeLabel.Text = $"Exit code: {code}";
-                        ScriptExitCodeLabel.Foreground = new SolidColorBrush(ok
-                            ? Color.FromRgb(0x4A, 0xDE, 0x80)
-                            : Color.FromRgb(0xF8, 0x71, 0x71));
-
-                        ScriptStatusLabel.Text = ok ? "Completed successfully." : $"Finished with exit code {code}.";
-                        ScriptStatusLabel.Foreground = new SolidColorBrush(ok
-                            ? Color.FromRgb(0x4A, 0xDE, 0x80)
-                            : Color.FromRgb(0xF8, 0x71, 0x71));
-
-                        AppendScriptLog($"\n■ Process exited with code {code}", ok ? "#4ADE80" : "#F87171");
-
-                        // Show Save Log button if log wasn't already being saved
-                        SaveLogAfterRunBtn.Visibility = SaveLogCheckbox.IsChecked == true
-                            ? Visibility.Collapsed
-                            : Visibility.Visible;
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        ScriptProgress.Visibility = Visibility.Collapsed;
-                        ScriptRunBtn.IsEnabled = true;
-                        ScriptStopBtn.Visibility = Visibility.Collapsed;
-                        ScriptStatusLabel.Text = $"Failed to start: {ex.Message}";
-                        ScriptStatusLabel.Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
-                        AppendScriptLog($"\n✗ Failed to start process: {ex.Message}", "#F87171");
-                        _scriptProcess = null;
-                    });
-                }
-            });
         }
 
         private void ScriptStop_Click(object sender, RoutedEventArgs e)

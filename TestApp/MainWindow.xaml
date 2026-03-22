@@ -1909,15 +1909,17 @@
                                 <!-- ══ RIGHT: Runner ══ -->
                                 <Grid Grid.Column="2">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>  <!-- script file -->
-                                        <RowDefinition Height="Auto"/>  <!-- runtime + args -->
-                                        <RowDefinition Height="Auto"/>  <!-- working dir + env vars -->
-                                        <RowDefinition Height="*"/>     <!-- log panel -->
-                                        <RowDefinition Height="Auto"/>  <!-- run button -->
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
+                                    <ScrollViewer Grid.Row="0"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel>
+
                                     <!-- Script file selector -->
-                                    <Border Grid.Row="0" Background="#0D1020" BorderBrush="#1A2030"
+                                    <Border Background="#0D1020" BorderBrush="#1A2030"
                                             BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,10">
                                         <StackPanel>
                                             <TextBlock Text="SCRIPT FILE"
@@ -1975,7 +1977,7 @@
                                     </Border>
 
                                     <!-- Runtime + Args -->
-                                    <Border Grid.Row="1" Background="#0D1020" BorderBrush="#1A2030"
+                                    <Border Background="#0D1020" BorderBrush="#1A2030"
                                             BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -2025,7 +2027,7 @@
                                     </Border>
 
                                     <!-- Working dir + Env vars -->
-                                    <Border Grid.Row="2" Background="#0D1020" BorderBrush="#1A2030"
+                                    <Border Background="#0D1020" BorderBrush="#1A2030"
                                             BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -2077,7 +2079,7 @@
                                     </Border>
 
                                     <!-- Log panel -->
-                                    <Border Grid.Row="3" Background="#060810" BorderBrush="#1A2030"
+                                    <Border Background="#060810" BorderBrush="#1A2030"
                                             BorderThickness="1" CornerRadius="8"
                                             Padding="12,10" Visibility="Collapsed"
                                             x:Name="ScriptLogPanel">
@@ -2119,8 +2121,11 @@
                                         </Grid>
                                     </Border>
 
-                                    <!-- Run button -->
-                                    <Grid Grid.Row="4" Margin="0,12,0,0">
+                                        </StackPanel>
+                                    </ScrollViewer>
+
+                                    <!-- Run button — always pinned at bottom -->
+                                    <Grid Grid.Row="1" Margin="0,8,0,8">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>

@@ -1,0 +1,145 @@
+<!--
+  ════════════════════════════════════════════════════════════════════
+  PATCH:  MainWindow.xaml  —  Script Runner page
+  
+  WHERE:  Inside the right-side Grid (Grid.Column="2") of PageScriptRunner,
+          between Grid.Row="0" (Script File selector) and Grid.Row="1"
+          (Runtime + Args).
+  
+  CHANGE 1: Add a new RowDefinition for the params panel after Row 0:
+  
+      <!-- existing rows: -->
+      <RowDefinition Height="Auto"/>  <!-- Row 0: script file     -->
+      <RowDefinition Height="Auto"/>  <!-- Row 1: runtime + args  -->  ← was Row 1
+      <RowDefinition Height="Auto"/>  <!-- Row 2: working dir     -->  ← was Row 2
+      <RowDefinition Height="*"/>     <!-- Row 3: log panel       -->  ← was Row 3
+      <RowDefinition Height="Auto"/>  <!-- Row 4: run button      -->  ← was Row 4
+  
+  Becomes:
+  
+      <RowDefinition Height="Auto"/>  <!-- Row 0: script file          -->
+      <RowDefinition Height="Auto"/>  <!-- Row 1: DYNAMIC PARAMS  ← NEW -->
+      <RowDefinition Height="Auto"/>  <!-- Row 2: runtime + args       -->
+      <RowDefinition Height="Auto"/>  <!-- Row 3: working dir          -->
+      <RowDefinition Height="*"/>     <!-- Row 4: log panel            -->
+      <RowDefinition Height="Auto"/>  <!-- Row 5: run button           -->
+  
+  Then increment Grid.Row on the existing rows 1-4 → 2-5.
+  
+  CHANGE 2: Insert this block as Grid.Row="1":
+  ════════════════════════════════════════════════════════════════════
+-->
+
+<!-- ── Dynamic Script Parameters panel ─────────────────────────────────── -->
+<Border x:Name="ScriptDynParamsContainer"
+        Grid.Row="1"
+        Background="#0D1020"
+        BorderBrush="#1A2030"
+        BorderThickness="1"
+        CornerRadius="8"
+        Padding="14,12"
+        Margin="0,0,0,10"
+        Visibility="Collapsed">
+    <StackPanel>
+
+        <!-- Section header -->
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <TextBlock Text="SCRIPT PARAMETERS"
+                           FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                           FontFamily="Segoe UI Variable, Segoe UI"
+                           VerticalAlignment="Center"/>
+                <!-- Info tooltip -->
+                <Border Width="16" Height="16" CornerRadius="8"
+                        Background="#1E2640" Margin="6,0,0,0"
+                        VerticalAlignment="Center" Cursor="Help">
+                    <Border.ToolTip>
+                        <ToolTip MaxWidth="340">
+                            <StackPanel>
+                                <TextBlock Text="Script Parameters" FontWeight="SemiBold"
+                                           FontSize="12" Foreground="#E2E8F0" Margin="0,0,0,4"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                           Text="These fields were detected from the script's parameter declarations. Fill them in and the correct arguments will be built automatically when you click Run."/>
+                                <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#60A5FA"
+                                           Margin="0,6,0,0"
+                                           Text="Fields marked * are required. Optional fields can be left blank to use the script's own default value."/>
+                            </StackPanel>
+                        </ToolTip>
+                    </Border.ToolTip>
+                    <TextBlock Text="i" FontSize="10" FontWeight="Bold"
+                               Foreground="#60A5FA"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                <!-- Detection badge -->
+                <Border x:Name="ParamDetectionBadge"
+                        Background="#1A2C1A" BorderBrush="#2D4A2D"
+                        BorderThickness="1" CornerRadius="4"
+                        Padding="8,2" Margin="10,0,0,0">
+                    <TextBlock x:Name="ParamDetectionLabel"
+                               Text="auto-detected"
+                               Foreground="#4ADE80" FontSize="10"
+                               FontFamily="Segoe UI Variable, Segoe UI"/>
+                </Border>
+            </StackPanel>
+
+            <!-- "Edit manually" toggle — collapses params and shows the Args box instead -->
+            <Button x:Name="ParamManualToggleBtn"
+                    Grid.Column="1"
+                    Content="Edit manually instead"
+                    Background="Transparent"
+                    Foreground="#4A5F88"
+                    BorderThickness="0"
+                    FontSize="10.5"
+                    Cursor="Hand"
+                    Click="ParamManualToggle_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <TextBlock x:Name="Tb"
+                                               Text="{TemplateBinding Content}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               TextDecorations="Underline"
+                                               Cursor="Hand"/>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Tb" Property="Foreground" Value="#60A5FA"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+
+        <!-- The rows for each detected param are injected here by ScriptParamPanel.Build() -->
+        <StackPanel x:Name="ScriptDynParamsHost"/>
+
+        <!-- Required fields note -->
+        <TextBlock Text="  * required"
+                   Foreground="#4A5F88" FontSize="10.5"
+                   FontFamily="Segoe UI Variable, Segoe UI"
+                   Margin="0,8,0,0"/>
+
+    </StackPanel>
+</Border>
+
+<!--
+  Also: wrap the existing Runtime + Args border so it can be hidden when
+  the params panel is active.  Add x:Name="ScriptManualArgsContainer"
+  to the existing Runtime+Args border (Grid.Row becomes 2):
+  
+      <Border x:Name="ScriptManualArgsContainer"
+              Grid.Row="2"
+              ... (rest unchanged) ...
+-->
