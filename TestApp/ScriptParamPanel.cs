@@ -88,8 +88,6 @@ namespace TestApp
 
             foreach (var p in _params)
             {
-                SyncValueFromControl(p);
-
                 if (string.IsNullOrEmpty(p.Value)) continue;
 
                 bool isFlag      = p.Type == "flag";
@@ -352,14 +350,6 @@ namespace TestApp
                 return "Log Files (*.log;*.txt)|*.log;*.txt|All Files (*.*)|*.*";
 
             return "All Files (*.*)|*.*";
-        }
-
-        // ── Sync value from non-file controls before building args ────────────
-
-        private static void SyncValueFromControl(ScriptParam p)
-        {
-            // File pickers and flags update p.Value directly via event handlers;
-            // nothing extra needed here for them.
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────

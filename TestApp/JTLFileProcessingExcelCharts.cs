@@ -7,6 +7,15 @@ using System.Text;
 
 namespace TestApp
 {
+    // TODO: BuildScaleChartXml, BuildDrawingXml, EscapeXml, and the InjectChartsForSheet
+    // ZIP-manipulation logic are near-identical to ResponseTimeConverterExcelCharts.
+    // Consider extracting a shared ChartXmlBuilder to eliminate ~400 lines of duplication.
+
+    /// <summary>
+    /// Builds mini bar-chart worksheets for JTL File Processing output.
+    /// Each transaction gets an Avg-vs-P90 horizontal bar with a shared
+    /// 0–60 s scale row, injected as raw OpenXML after EPPlus saves shells.
+    /// </summary>
     public static class JTLFileProcessingExcelCharts
     {
         private const long ChartW = 1400L * 9525L;
@@ -379,12 +388,6 @@ namespace TestApp
             }
             sb.Append("</xdr:wsDr>");
             return sb.ToString();
-        }
-
-        private static int ExtractNum(string uri)
-        {
-            var m = System.Text.RegularExpressions.Regex.Match(uri, @"chart(\d+)\.xml");
-            return m.Success ? int.Parse(m.Groups[1].Value) : 0;
         }
 
         private static string EscapeXml(string s) =>

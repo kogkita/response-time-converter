@@ -214,27 +214,8 @@ namespace TestApp
             catch { return false; }
         }
 
+        /// <summary>Delegates to shared <see cref="CsvHelper.SplitCsvLine"/>.</summary>
         private static string[] SplitCsvLine(string line)
-        {
-            var fields = new List<string>();
-            var sb = new System.Text.StringBuilder();
-            bool inQ = false;
-            foreach (char c in line)
-            {
-                if (inQ)
-                {
-                    if (c == '"') inQ = false;
-                    else sb.Append(c);
-                }
-                else
-                {
-                    if (c == '"') inQ = true;
-                    else if (c == ',') { fields.Add(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
-                }
-            }
-            fields.Add(sb.ToString());
-            return fields.ToArray();
-        }
+            => CsvHelper.SplitCsvLine(line);
     }
 }

@@ -91,12 +91,6 @@ namespace TestApp
             _pendingCharts = new();
 
         /// <summary>
-        /// Clears any stale pending chart data.  Should be called at the
-        /// start of a clubbed-mode run to avoid leaking data from a previous
-        /// run that may have failed before <see cref="InjectPendingCharts"/>
-        /// was reached.
-        /// </summary>
-        /// <summary>
         /// Disposes any pending ExcelPackage objects and clears the chart cache.
         /// Call at the start of each run and in any error/cancel path.
         /// </summary>
@@ -123,46 +117,15 @@ namespace TestApp
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Sheet-name / table-name helpers
-        // ─────────────────────────────────────────────────────────────────────
+        // ── Sheet-name / table-name helpers (delegate to shared ExcelNameHelper) ──
 
-        /// <summary>
-        /// Returns a sheet name that is unique within <paramref name="pkg"/>
-        /// and within Excel's 31-character limit.
-        /// </summary>
+        /// <summary>Delegates to <see cref="ExcelNameHelper.UniqueSheetName"/>.</summary>
         internal static string UniqueSheetName(ExcelPackage pkg, string name)
-        {
-            if (name.Length > 31) name = name[..31];
+            => ExcelNameHelper.UniqueSheetName(pkg, name);
 
-            string candidate = name;
-            int n = 2;
-            while (pkg.Workbook.Worksheets.Any(
-                ws => ws.Name.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
-            {
-                candidate = $"{name[..Math.Min(name.Length, 28)]} {n++}";
-            }
-
-            return candidate;
-        }
-
-        /// <summary>
-        /// Returns a table name that is unique across all worksheets in
-        /// <paramref name="pkg"/> (Excel requires workbook-wide uniqueness).
-        /// </summary>
+        /// <summary>Delegates to <see cref="ExcelNameHelper.UniqueTableName"/>.</summary>
         internal static string UniqueTableName(ExcelPackage pkg, string name)
-        {
-            var existing = pkg.Workbook.Worksheets
-                .SelectMany(ws => ws.Tables.Select(t => t.Name))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            string candidate = name;
-            int n = 2;
-            while (existing.Contains(candidate))
-                candidate = $"{name}{n++}";
-
-            return candidate;
-        }
+            => ExcelNameHelper.UniqueTableName(pkg, name);
 
         // ─────────────────────────────────────────────────────────────────────
         // CSV parsing
@@ -262,37 +225,9 @@ namespace TestApp
                 CultureInfo.InvariantCulture,
                 out double value) ? value / 1000 : 0;
 
-        /// <summary>
-        /// Quote-aware CSV line splitter.  Handles fields wrapped in
-        /// double-quotes and escaped quotes ("").
-        /// </summary>
+        /// <summary>Delegates to shared <see cref="CsvHelper.SplitCsvLine"/>.</summary>
         private static string[] SplitCsvLine(string line)
-        {
-            var fields = new List<string>();
-            var sb = new System.Text.StringBuilder();
-            bool inQuotes = false;
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-                if (inQuotes)
-                {
-                    if (c == '"')
-                    {
-                        if (i + 1 < line.Length && line[i + 1] == '"') { sb.Append('"'); i++; }
-                        else inQuotes = false;
-                    }
-                    else sb.Append(c);
-                }
-                else
-                {
-                    if (c == '"') inQuotes = true;
-                    else if (c == ',') { fields.Add(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
-                }
-            }
-            fields.Add(sb.ToString());
-            return fields.ToArray();
-        }
+            => CsvHelper.SplitCsvLine(line);
 
         // ─────────────────────────────────────────────────────────────────────
         // Excel sheet writer

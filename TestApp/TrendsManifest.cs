@@ -178,11 +178,8 @@ namespace TestApp
                 // Only content changes (add / remove / modify) trigger regeneration.
                 bool contentChanged = added.Count > 0 || removed.Count > 0 || modified.Count > 0;
 
-                if (!contentChanged && renames.Count == 0)
-                    return (false, "");
-
-                if (!contentChanged && renames.Count > 0)
-                    return (false, "");  // rename only — no regeneration needed
+                if (!contentChanged)
+                    return (false, "");  // no content change (renames only, or nothing at all)
 
                 var parts = new List<string>();
                 if (added.Count    > 0) parts.Add($"{added.Count} file(s) added");

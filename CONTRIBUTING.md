@@ -57,12 +57,37 @@ Enhancement suggestions are welcome as GitHub issues. Please include:
 |---|---|
 | `MainWindow.xaml` | All UI layout and styles |
 | `MainWindow.xaml.cs` | UI event handlers and page logic |
-| `BLGConverter.cs` | relog.exe wrapper, counter filter templates, BLG → CSV |
+| `MainWindow_patch.cs` | Supplementary UI patches |
+| **Shared Utilities** | |
+| `CsvHelper.cs` | Shared quote-aware CSV line splitter |
+| `ExcelNameHelper.cs` | Shared unique sheet/table name helpers |
+| `AppDataManager.cs` | JSON persistence — libraries, settings, global backup |
+| `AppLogger.cs` | Thread-safe rolling file logger |
+| **Convert Response Times** | |
 | `ResponseTimeConverter.cs` | JMeter CSV → Excel conversion |
-| `ResponseTimeConverterExcelCharts.cs` | Chart generation for response time output |
+| `ResponseTimeConverterExcelCharts.cs` | Mini bar-chart sheet generation |
+| **JTL File Processing** | |
 | `JTLFileProcessing.cs` | JTL → Excel conversion |
-| `JTLFileProcessingExcelCharts.cs` | Chart generation for JTL output |
-| `NmonAnalyzer.cs` | nmon_analyser Excel macro automation |
+| `JTLFileProcessingExcelCharts.cs` | Mini bar-chart sheet generation |
+| **BLG File Conversion** | |
+| `BLGConverter.cs` | relog.exe wrapper, counter filter templates, BLG → CSV |
+| `BLGGraphProducer.cs` | Server performance line charts from relog CSV output |
+| **nmon Analysis** | |
+| `NmonParser.cs` | .nmon file parser |
+| `NmonExcelProducer.cs` | Built-in nmon → Excel (no Excel installation needed) |
+| `NmonAnalyzer.cs` | nmon_analyser Excel macro automation via VBScript |
+| **Run Comparison** | |
+| `RunComparisonProcessor.cs` | Multi-run delta computation and Excel reporting |
+| **Script Runner** | |
+| `ScriptParamDetector.cs` | argparse / PowerShell param auto-detection |
+| `ScriptParamPanel.cs` | Dynamic parameter UI builder |
+| `WindowsTaskScheduler.cs` | schtasks.exe wrapper for scheduling |
+| **Test Run Trends** | |
+| `TestRunTrendsProcessor.cs` | Trend report generation engine |
+| `TrendsManifest.cs` | File change detection for auto-watch |
+| `BulkImportOptionsDialog.cs` | Bulk import options dialog |
+| **System Tray** | |
+| `TrayManager.cs` | System tray icon (reflection-based, no WinForms reference) |
 
 ---
 

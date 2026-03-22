@@ -150,10 +150,6 @@ namespace TestApp
 
 
 
-        // ── Entry point ───────────────────────────────────────────────────────
-
-
-
         // ── Entry point: accepts 2..N run files ───────────────────────────────
 
         /// <summary>
@@ -549,10 +545,6 @@ namespace TestApp
                 .ToList();
 
         }
-
-
-
-        // ── Summary sheet ─────────────────────────────────────────────────────
 
 
 
@@ -1335,36 +1327,9 @@ namespace TestApp
 
 
         /// <summary>
-        /// Quote-aware CSV line splitter.  Handles fields wrapped in
-        /// double-quotes and escaped quotes ("").
-        /// </summary>
+        /// <summary>Delegates to shared <see cref="CsvHelper.SplitCsvLine"/>.</summary>
         private static string[] SplitCsvLine(string line)
-        {
-            var fields = new List<string>();
-            var sb = new System.Text.StringBuilder();
-            bool inQuotes = false;
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-                if (inQuotes)
-                {
-                    if (c == '"')
-                    {
-                        if (i + 1 < line.Length && line[i + 1] == '"') { sb.Append('"'); i++; }
-                        else inQuotes = false;
-                    }
-                    else sb.Append(c);
-                }
-                else
-                {
-                    if (c == '"') inQuotes = true;
-                    else if (c == ',') { fields.Add(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
-                }
-            }
-            fields.Add(sb.ToString());
-            return fields.ToArray();
-        }
+            => CsvHelper.SplitCsvLine(line);
 
         // ── Internal flat record ──────────────────────────────────────────────
 

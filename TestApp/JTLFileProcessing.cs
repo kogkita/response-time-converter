@@ -80,12 +80,6 @@ namespace TestApp
             _pendingCharts = new();
 
         /// <summary>
-        /// Clears any stale pending chart data.  Should be called at the
-        /// start of a clubbed-mode run to avoid leaking data from a previous
-        /// run that may have failed before <see cref="InjectPendingCharts"/>
-        /// was reached.
-        /// </summary>
-        /// <summary>
         /// Clears the chart cache.  Call at the start of each run and in any
         /// error/cancel path to prevent stale record lists accumulating.
         /// </summary>
@@ -108,30 +102,13 @@ namespace TestApp
             }
         }
 
-        // ── Sheet-name helpers ────────────────────────────────────────────────
+        // ── Sheet-name helpers (delegate to shared ExcelNameHelper) ──────────
 
         internal static string UniqueSheetName(ExcelPackage pkg, string name)
-        {
-            if (name.Length > 31) name = name[..31];
-            string candidate = name;
-            int n = 2;
-            while (pkg.Workbook.Worksheets.Any(
-                ws => ws.Name.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
-                candidate = $"{name[..Math.Min(name.Length, 28)]} {n++}";
-            return candidate;
-        }
+            => ExcelNameHelper.UniqueSheetName(pkg, name);
 
         internal static string UniqueTableName(ExcelPackage pkg, string name)
-        {
-            var existing = pkg.Workbook.Worksheets
-                .SelectMany(ws => ws.Tables.Select(t => t.Name))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            string candidate = name;
-            int n = 2;
-            while (existing.Contains(candidate))
-                candidate = $"{name}{n++}";
-            return candidate;
-        }
+            => ExcelNameHelper.UniqueTableName(pkg, name);
 
         // ── JTL parsing ───────────────────────────────────────────────────────
 
@@ -246,33 +223,9 @@ namespace TestApp
             return records;
         }
 
+        /// <summary>Delegates to shared <see cref="CsvHelper.SplitCsvLineToList"/>.</summary>
         private static List<string> SplitCsvLine(string line)
-        {
-            var fields = new List<string>();
-            var sb = new System.Text.StringBuilder();
-            bool inQuotes = false;
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-                if (inQuotes)
-                {
-                    if (c == '"')
-                    {
-                        if (i + 1 < line.Length && line[i + 1] == '"') { sb.Append('"'); i++; }
-                        else inQuotes = false;
-                    }
-                    else sb.Append(c);
-                }
-                else
-                {
-                    if (c == '"') inQuotes = true;
-                    else if (c == ',') { fields.Add(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
-                }
-            }
-            fields.Add(sb.ToString());
-            return fields;
-        }
+            => CsvHelper.SplitCsvLineToList(line);
 
         private static double Percentile(List<int> data, double p)
         {

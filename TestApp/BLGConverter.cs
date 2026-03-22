@@ -81,7 +81,7 @@ namespace TestApp
                 outDir,
                 Path.GetFileNameWithoutExtension(opts.BlgPath) + ".csv");
 
-            bool usingTemp = true; // ResolveCounterFile always writes a sanitized temp file
+            // ResolveCounterFile always writes a sanitized temp file that must be cleaned up.
             string counterFilePath = ResolveCounterFile(opts);
 
             try
@@ -90,7 +90,7 @@ namespace TestApp
             }
             finally
             {
-                if (usingTemp && File.Exists(counterFilePath))
+                if (File.Exists(counterFilePath))
                     File.Delete(counterFilePath);
             }
 
