@@ -236,12 +236,8 @@ namespace TestApp
             {
                 if (MonthMap.ContainsKey(parts[i].ToUpper()) && int.TryParse(parts[i + 1], out _))
                 {
-                    string display = parts[i].ToUpper() + " " + parts[i + 1];
-                    // Append sequence number if present (e.g. TRN_FEB_26_2 → "FEB 26 #2")
-                    int seqIdx = i + 2;
-                    if (seqIdx < parts.Length && int.TryParse(parts[seqIdx], out int seq) && seq > 0)
-                        display += $" #{seq}";
-                    return display;
+                    // Only month + year — run sequence number is omitted since one report per month
+                    return parts[i].ToUpper() + " " + parts[i + 1];
                 }
             }
             // No pattern match — use date if available, otherwise filename
@@ -490,9 +486,8 @@ namespace TestApp
                 r.Cases.ToDictionary(c => c.Name, c => c, StringComparer.OrdinalIgnoreCase)
             ).ToList();
 
-            // Latest N runs for fail window
-            int windowStart = Math.Max(0, runs.Count - failWindow);
-            var windowRuns = lookup.Skip(windowStart).ToList();
+            // Latest N runs for fail window — runs[0] is newest, so Take(failWindow) gives the most recent
+            var windowRuns = lookup.Take(Math.Min(failWindow, runs.Count)).ToList();
 
             // Collect all unique test case names — sorted by fail count desc, then A-Z
             var allCases = runs.SelectMany(r => r.Cases.Select(c => c.Name))
@@ -705,8 +700,8 @@ namespace TestApp
                 r.Cases.ToDictionary(c => c.Name, c => c, StringComparer.OrdinalIgnoreCase)
             ).ToList();
 
-            int windowStart = Math.Max(0, runs.Count - failWindow);
-            var windowRuns  = lookup.Skip(windowStart).ToList();
+            // runs[0] is newest — Take(failWindow) picks the most recent N runs
+            var windowRuns  = lookup.Take(Math.Min(failWindow, runs.Count)).ToList();
 
             // ── Collect plan assignments per test case across all runs ──────────
             // caseToPlan     = current (newest) plan for grouping

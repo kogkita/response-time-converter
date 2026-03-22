@@ -2138,6 +2138,19 @@ namespace TestApp
             // (e.g. "Unsaved changes — OtherCustomer" must not linger after switching)
             TrendsStatusLabel.Text = "";
 
+            // Sync the per-customer Watch toggle button to the actual watch state of
+            // the newly-loaded customer — avoids carrying over the previous customer's
+            // button state (e.g. Encova "Stop Watch" bleeding into Intersnack).
+            bool isWatched = _watchTimers.ContainsKey(c.Id);
+            TrendsWatchToggleBtn.Content    = isWatched ? "⏹ Stop Watch" : "👁 Auto-Watch";
+            TrendsWatchToggleBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                isWatched ? "#1F2D20" : "#1E2640"));
+            TrendsWatchToggleBtn.Foreground = isWatched
+                ? new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80))
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#60A5FA"));
+            TrendsWatchStatusLabel.Text       = isWatched ? TrendsWatchStatusLabel.Text : "";
+            TrendsWatchStatusLabel.Visibility = isWatched ? Visibility.Visible : Visibility.Collapsed;
+
             UpdateTrendsFilesCount();
 
             _suppressDirtyTracking = false;
@@ -2496,6 +2509,9 @@ namespace TestApp
                             StartCustomerWatch(c, silent: true);
                     }
 
+                    // Sync the Watch All / Stop All button to reflect restored watches
+                    RefreshWatchAllBtn();
+
                     // If launched with --minimized (e.g. after server reboot via
                     // Task Scheduler), go straight to the system tray.
                     if (App.StartMinimized && _watchTimers.Count > 0)
@@ -2677,21 +2693,61 @@ namespace TestApp
 
         private void RefreshWatchAllBtn()
         {
-            int watching  = _watchTimers.Count;
-            int total     = _trendsLibrary.Count(c =>
+            int watching = _watchTimers.Count;
+            int total    = _trendsLibrary.Count(c =>
                 !string.IsNullOrEmpty(c.RunsFolder) && Directory.Exists(c.RunsFolder));
-            bool allActive = total > 0 && watching >= total;
+            int notWatching = total - watching;
+            bool anyActive  = watching > 0;
+            bool allActive  = total > 0 && watching >= total;
 
-            if (TrendsWatchAllBtn == null) return;
-            TrendsWatchAllBtn.Content    = allActive ? "⏹ Stop All" : "👁 Watch All";
+            if (TrendsWatchAllBtn == null || TrendsStopAllBtn == null) return;
+
+            // ── Watch All button ────────────────────────────────────────────────
+            // Enabled only when there are customers not yet being watched.
+            // Badge shows how many are NOT watching when partially active.
+            bool watchAllEnabled = notWatching > 0;
+            TrendsWatchAllBtn.IsEnabled  = watchAllEnabled;
             TrendsWatchAllBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-                allActive ? "#1F2D20" : "#1E2640"));
-            TrendsWatchAllBtn.Foreground = new SolidColorBrush(allActive
-                ? Color.FromRgb(0x4A, 0xDE, 0x80)
-                : (Color)ColorConverter.ConvertFromString("#60A5FA"));
-            TrendsWatchAllBtn.Click -= WatchAllBtn_Click;
-            TrendsWatchAllBtn.Click -= StopAllBtn_Click;
-            TrendsWatchAllBtn.Click += allActive ? StopAllBtn_Click : WatchAllBtn_Click;
+                watchAllEnabled ? "#1E2640" : "#111827"));
+            TrendsWatchAllBtn.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                watchAllEnabled ? "#60A5FA" : "#374151"));
+
+            if (TrendsWatchAllBadge != null)
+            {
+                // Show badge only in partial state — tells user how many will be started
+                if (anyActive && !allActive)
+                {
+                    TrendsWatchAllBadge.Text       = $"(+{notWatching})";
+                    TrendsWatchAllBadge.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TrendsWatchAllBadge.Visibility = Visibility.Collapsed;
+                }
+            }
+
+            // ── Stop All button ─────────────────────────────────────────────────
+            // Enabled only when any watcher is running.
+            // Badge always shows how many are currently active.
+            TrendsStopAllBtn.IsEnabled  = anyActive;
+            TrendsStopAllBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                anyActive ? "#1F2D20" : "#111827"));
+            TrendsStopAllBtn.Foreground = anyActive
+                ? new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80))
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#374151"));
+
+            if (TrendsStopAllBadge != null)
+            {
+                if (anyActive)
+                {
+                    TrendsStopAllBadge.Text       = $"({watching}/{total})";
+                    TrendsStopAllBadge.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TrendsStopAllBadge.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         private bool IsCurrentCustomer(TrendsCustomer c)

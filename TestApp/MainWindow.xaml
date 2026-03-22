@@ -2455,52 +2455,82 @@
                                                    FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
                                                    FontFamily="Segoe UI Variable, Segoe UI"
                                                    VerticalAlignment="Center"/>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                            <Button Content="&#x2191;"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    Background="#1E2640" Foreground="#6B7A99"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Width="24" Height="24" Margin="0,0,4,0"
-                                                    ToolTip="Export customer library to file"
-                                                    Click="TrendsLibraryExport_Click"/>
-                                            <Button Content="&#x2193;"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    Background="#1E2640" Foreground="#6B7A99"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Width="24" Height="24" Margin="0,0,4,0"
-                                                    ToolTip="Import customer library from file"
-                                                    Click="TrendsLibraryImport_Click"/>
-                                            <Button x:Name="TrendsWatchAllBtn"
-                                                    Content="&#x1F441; Watch All"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    Background="#1E2640" Foreground="#60A5FA"
-                                                    FontSize="10" FontWeight="SemiBold"
-                                                    Height="24" Padding="8,0" Margin="0,0,4,0"
-                                                    ToolTip="Start auto-watch for all library customers at once"
-                                                    Click="WatchAllBtn_Click"/>
-                                            <Button x:Name="TrendsGenerateAllBtn"
-                                                    Content="&#x26A1; Generate All"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    Background="#1E2640" Foreground="#34D399"
-                                                    FontSize="10" FontWeight="SemiBold"
-                                                    Height="24" Padding="8,0" Margin="0,0,4,0"
-                                                    ToolTip="Regenerate trends for all library customers now, in parallel"
-                                                    Click="TrendsGenerateAll_Click"/>
-                                            <Button Content="+ Add"
-                                                    x:Name="TrendsLibraryAddBtn"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    Background="#1E2640" Foreground="#60A5FA"
-                                                    FontSize="10" FontWeight="SemiBold"
-                                                    Height="24" Padding="8,0" Margin="0,0,4,0"
-                                                    Click="TrendsLibraryAdd_Click"/>
-                                            <Button Content="⊞ Bulk Import"
-                                                    x:Name="TrendsBulkImportBtn"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    Background="#1E2640" Foreground="#A78BFA"
-                                                    FontSize="10" FontWeight="SemiBold"
-                                                    Height="24" Padding="8,0"
-                                                    ToolTip="Import all customer subfolders from a root folder at once"
-                                                    Click="TrendsBulkImport_Click"/>
+                                        <!-- Two-row toolbar: utility buttons top, Watch/Stop All bottom -->
+                                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                                            <!-- Row 1: utility buttons -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <Button Content="&#x2191;"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#6B7A99"
+                                                        FontSize="11" FontWeight="SemiBold"
+                                                        Width="24" Height="24" Margin="0,0,4,0"
+                                                        ToolTip="Export customer library to file"
+                                                        Click="TrendsLibraryExport_Click"/>
+                                                <Button Content="&#x2193;"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#6B7A99"
+                                                        FontSize="11" FontWeight="SemiBold"
+                                                        Width="24" Height="24" Margin="0,0,4,0"
+                                                        ToolTip="Import customer library from file"
+                                                        Click="TrendsLibraryImport_Click"/>
+                                                <Button x:Name="TrendsGenerateAllBtn"
+                                                        Content="&#x26A1; Generate All"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#34D399"
+                                                        FontSize="10" FontWeight="SemiBold"
+                                                        Height="24" Padding="8,0" Margin="0,0,4,0"
+                                                        ToolTip="Regenerate trends for all library customers now, in parallel"
+                                                        Click="TrendsGenerateAll_Click"/>
+                                                <Button Content="+ Add"
+                                                        x:Name="TrendsLibraryAddBtn"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#60A5FA"
+                                                        FontSize="10" FontWeight="SemiBold"
+                                                        Height="24" Padding="8,0" Margin="0,0,4,0"
+                                                        Click="TrendsLibraryAdd_Click"/>
+                                                <Button Content="⊞ Bulk Import"
+                                                        x:Name="TrendsBulkImportBtn"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#A78BFA"
+                                                        FontSize="10" FontWeight="SemiBold"
+                                                        Height="24" Padding="8,0"
+                                                        ToolTip="Import all customer subfolders from a root folder at once"
+                                                        Click="TrendsBulkImport_Click"/>
+                                            </StackPanel>
+                                            <!-- Row 2: Watch All + Stop All as permanent separate buttons -->
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="TrendsWatchAllBtn"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#60A5FA"
+                                                        FontSize="10" FontWeight="SemiBold"
+                                                        Height="24" Padding="8,0" Margin="0,0,4,0"
+                                                        ToolTip="Start auto-watch for all library customers"
+                                                        Click="WatchAllBtn_Click">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#x1F441; Watch All" VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="TrendsWatchAllBadge"
+                                                                   Visibility="Collapsed"
+                                                                   Margin="4,0,0,0" VerticalAlignment="Center"
+                                                                   FontSize="9" Foreground="#60A5FA"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="TrendsStopAllBtn"
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        Background="#1E2640" Foreground="#6B7A99"
+                                                        FontSize="10" FontWeight="SemiBold"
+                                                        Height="24" Padding="8,0"
+                                                        ToolTip="Stop all active watchers"
+                                                        IsEnabled="False"
+                                                        Click="StopAllBtn_Click">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="⏹ Stop All" VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="TrendsStopAllBadge"
+                                                                   Visibility="Collapsed"
+                                                                   Margin="4,0,0,0" VerticalAlignment="Center"
+                                                                   FontSize="9" Foreground="#4ADE80"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Grid>
                                     <Border Grid.Row="1" Background="#0A0D18" BorderBrush="#1A2030"
