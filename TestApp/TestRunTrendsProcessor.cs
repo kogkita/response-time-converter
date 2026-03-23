@@ -214,6 +214,19 @@ namespace TestApp
 
         private static int ParseSortKey(string label) => ParseMonthYearKey(label);
 
+        /// <summary>
+        /// Returns the prefix token before the month segment.
+        /// e.g. "TST_MAR_26_1" → "TST", "AX1_FEB_25_1" → "AX1", "MAR_26_1" → ""
+        /// </summary>
+        private static string GetRunPrefix(string label)
+        {
+            var parts = label.Split('_');
+            for (int i = 1; i < parts.Length; i++)
+                if (MonthMap.ContainsKey(parts[i]))
+                    return string.Join("_", parts[..i]).ToUpper();
+            return "";
+        }
+
         /// <summary>Returns the trailing run number (last numeric token), or 0.</summary>
         private static int ParseRunNumber(string label)
         {
@@ -229,15 +242,23 @@ namespace TestApp
         /// Falls back to the raw label if no pattern is found.
         /// RunDate is used as additional context when the raw label is just a filename.
         /// </summary>
-        private static string BuildDisplayLabel(string label, DateTime runDate = default)
+        private static string BuildDisplayLabel(string label, DateTime runDate = default, bool includeSeqNum = false)
         {
             var parts = label.Split('_');
             for (int i = 0; i < parts.Length - 1; i++)
             {
                 if (MonthMap.ContainsKey(parts[i].ToUpper()) && int.TryParse(parts[i + 1], out _))
                 {
-                    // Only month + year — run sequence number is omitted since one report per month
-                    return parts[i].ToUpper() + " " + parts[i + 1];
+                    // Include any prefix tokens before the month so TST and AX1 are distinct
+                    string prefix = i > 0 ? string.Join("_", parts[..i]) + " " : "";
+                    string baseLabel = prefix + parts[i].ToUpper() + " " + parts[i + 1];
+
+                    // When keeping multiple runs per month, append the sequence number
+                    // so TST_MAY_25_1 → "TST MAY 25 #1" and TST_MAY_25_2 → "TST MAY 25 #2"
+                    if (includeSeqNum && i + 2 < parts.Length && int.TryParse(parts[i + 2], out int seq))
+                        return baseLabel + " #" + seq;
+
+                    return baseLabel;
                 }
             }
             // No pattern match — use date if available, otherwise filename
@@ -249,7 +270,8 @@ namespace TestApp
         // ── Main entry point ─────────────────────────────────────────────────
 
         public static (bool Ok, string OutputPath, string Error) Generate(Action<string>? log,
-            string runsFolder, string customerName, string? reportsFolder = null, int failWindow = 3)
+            string runsFolder, string customerName, string? reportsFolder = null, int failWindow = 3,
+            int maxMonths = 0, bool includeAllRunsPerMonth = false)
         {
             // Merge UI log delegate with the global AppLogger so every Generate()
             // call is captured in the app log file when logging is enabled.
@@ -314,19 +336,32 @@ namespace TestApp
                 var unrecognised = runs.Where(r => ParseMonthYearKey(r.RunNumber) == 0).ToList();
                 Write(combined, $"Recognised pattern: {recognised.Count}  Unrecognised: {unrecognised.Count}");
 
-                // Dedup recognised: keep highest sequence per Month+Year
-                var dedupedRecognised = recognised
-                    .GroupBy(r => ParseMonthYearKey(r.RunNumber))
-                    .Select(g =>
-                    {
-                        var winner = g.OrderByDescending(r => ParseRunNumber(r.RunNumber)).First();
-                        var dropped = g.Where(r => r != winner).Select(r => r.RunNumber).ToList();
-                        if (dropped.Count > 0)
-                            Write(combined, $"  Dedup key={g.Key}: kept '{winner.RunNumber}', dropped [{string.Join(", ", dropped)}]");
-                        return winner;
-                    })
-                    .OrderByDescending(r => ParseSortKey(r.RunNumber))
-                    .ToList();
+                // Dedup recognised: keep highest sequence number per Prefix+Month+Year
+                // unless includeAllRunsPerMonth is true, in which case all runs are kept.
+                List<TrendRun> dedupedRecognised;
+                if (includeAllRunsPerMonth)
+                {
+                    dedupedRecognised = recognised
+                        .OrderByDescending(r => ParseSortKey(r.RunNumber))
+                        .ThenByDescending(r => ParseRunNumber(r.RunNumber))
+                        .ToList();
+                    Write(combined, $"  Include-all-runs mode: keeping all {dedupedRecognised.Count} recognised runs (newest month first, highest seq first within month).");
+                }
+                else
+                {
+                    dedupedRecognised = recognised
+                        .GroupBy(r => GetRunPrefix(r.RunNumber) + "_" + ParseMonthYearKey(r.RunNumber))
+                        .Select(g =>
+                        {
+                            var winner  = g.OrderByDescending(r => ParseRunNumber(r.RunNumber)).First();
+                            var dropped = g.Where(r => r != winner).Select(r => r.RunNumber).ToList();
+                            if (dropped.Count > 0)
+                                Write(combined, $"  Dedup key={g.Key}: kept '{winner.RunNumber}', dropped [{string.Join(", ", dropped)}]");
+                            return winner;
+                        })
+                        .OrderByDescending(r => ParseSortKey(r.RunNumber))
+                        .ToList();
+                }
 
                 // Dedup unrecognised: collapse runs with identical RunNumber + RunDate (±1 day)
                 var dedupedUnrecognised = new List<TrendRun>();
@@ -348,6 +383,12 @@ namespace TestApp
                     .Concat(dedupedUnrecognised)
                     .ToList();
 
+                // Re-apply labels now that we know the final set and the include-all flag.
+                // When includeAllRunsPerMonth=true, sequence numbers are included in the label
+                // so TST_MAY_25_1 → "TST MAY 25 #1" and TST_MAY_25_2 → "TST MAY 25 #2".
+                foreach (var r in runs)
+                    r.Label = BuildDisplayLabel(r.RunNumber, r.RunDate, includeAllRunsPerMonth);
+
                 // ── Ensure label uniqueness ───────────────────────────────────
                 // If two runs share the same display label, append short date suffix
                 var labelCounts = runs.GroupBy(r => r.Label).Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
@@ -363,6 +404,14 @@ namespace TestApp
                 }
 
                 Write(combined, $"After deduplication: {runs.Count} unique run(s) ({dedupedRecognised.Count} pattern-matched, {dedupedUnrecognised.Count} by date).");
+
+                // Apply maxMonths limit — keep only the N most recent months
+                if (maxMonths > 0 && runs.Count > maxMonths)
+                {
+                    runs = runs.Take(maxMonths).ToList();
+                    Write(combined, $"Trimmed to {maxMonths} most recent run(s) (maxMonths limit).");
+                }
+
                 Write(combined, $"Loaded {runs.Count} run(s), building trends...");
 
                 // Build trend output

@@ -168,6 +168,8 @@ namespace TestApp
             /// Used to restore watches automatically after an app or server restart.
             /// </summary>
             public bool      WatchEnabled        { get; set; } = false;
+            public int       MaxMonths           { get; set; } = 0;
+            public bool      IncludeOldRuns      { get; set; } = false;
         }
 
         public static List<TrendsCustomerDto> LoadTrendsLibrary()
@@ -428,5 +430,35 @@ namespace TestApp
             catch (Exception ex) { result.Error = ex.Message; }
             return result;
         }
+        // ── DB API Hosts ─────────────────────────────────────────────────────────
+
+        public static readonly string DbApiHostsPath   = Path.Combine(AppDataDir, "db_api_hosts.json");
+        private static readonly string DefaultDbApiHost = "http://apso1wats4:8080";
+
+        public static List<string> LoadDbApiHosts()
+        {
+            try
+            {
+                if (!File.Exists(DbApiHostsPath))
+                    return new List<string> { DefaultDbApiHost };
+                var json = File.ReadAllText(DbApiHostsPath);
+                var list = JsonSerializer.Deserialize<List<string>>(json, Opts) ?? new();
+                if (!list.Contains(DefaultDbApiHost, StringComparer.OrdinalIgnoreCase))
+                    list.Insert(0, DefaultDbApiHost);
+                return list;
+            }
+            catch { return new List<string> { DefaultDbApiHost }; }
+        }
+
+        public static void SaveDbApiHosts(List<string> hosts)
+        {
+            try
+            {
+                EnsureDir();
+                File.WriteAllText(DbApiHostsPath, JsonSerializer.Serialize(hosts, Opts));
+            }
+            catch { }
+        }
+
     }
 }

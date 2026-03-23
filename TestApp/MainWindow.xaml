@@ -159,6 +159,113 @@
             </Setter>
         </Style>
 
+        <!-- Dark-themed editable ComboBox (IsEditable=True) -->
+        <Style x:Key="DarkComboBoxEditableStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#161B2A"/>
+            <Setter Property="Foreground" Value="#CBD5E1"/>
+            <Setter Property="BorderBrush" Value="#252D42"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Background" Value="#1E2338"/>
+                        <Setter Property="Foreground" Value="#CBD5E1"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="8,6"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter Property="Background" Value="#2563EB"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#1E3A8A"/>
+                                <Setter Property="Foreground" Value="#93C5FD"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="OuterBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="28"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Editable text box -->
+                                    <TextBox x:Name="PART_EditableTextBox"
+                                             Grid.Column="0"
+                                             Background="Transparent"
+                                             Foreground="#CBD5E1"
+                                             BorderThickness="0"
+                                             Padding="10,0"
+                                             VerticalContentAlignment="Center"
+                                             FontFamily="Consolas, Segoe UI Mono"
+                                             FontSize="{TemplateBinding FontSize}"
+                                             CaretBrush="#CBD5E1"
+                                             SelectionBrush="#2563EB"
+                                             IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                                    <!-- Dropdown arrow toggle -->
+                                    <ToggleButton Grid.Column="1"
+                                                  Focusable="False"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press"
+                                                  Background="Transparent"
+                                                  BorderThickness="0">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent">
+                                                    <TextBlock Text="▾" Foreground="#6B7A99" FontSize="12"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   Focusable="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Slide">
+                                <Border Background="#1A2038"
+                                        BorderBrush="#2A3355"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Margin="0,2,0,0"
+                                        MinWidth="{TemplateBinding ActualWidth}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Padding="0,4">
+                                    <ScrollViewer CanContentScroll="True">
+                                        <StackPanel IsItemsHost="True"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="#3D4D70"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="#2563EB"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Dark-themed ComboBox style with dark dropdown popup -->
         <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Background" Value="#161B2A"/>
@@ -358,130 +465,179 @@
 
                         <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,0"/>
 
-                        <!-- ── JMeter Tools group ── -->
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="JMETER TOOLS"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="#6B7A99"
-                                   FontFamily="Segoe UI Variable, Segoe UI"
-                                   Margin="20,14,0,4"/>
+                        <!-- Scrollable nav groups -->
+                        <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
 
-                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                            <Button x:Name="NavConvert"
-                                    Style="{StaticResource NavButtonActiveStyle}"
-                                    Click="NavConvert_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x1F4CA;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Convert Response Times" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
+                            <!-- ── JMeter Tools group ── -->
+                            <Rectangle Height="1" Fill="#1E2130" Margin="12,0"/>
+                            <Button Click="NavGroupJmeter_Click"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Background="Transparent" HorizontalContentAlignment="Left"
+                                    Padding="20,10,12,10" BorderThickness="0">
+                                <Grid Width="170">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="JMETER TOOLS"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="NavGroupJmeterChevron" Grid.Column="1" Text="▾"
+                                               FontSize="10" Foreground="#3D4D70" VerticalAlignment="Center"/>
+                                </Grid>
                             </Button>
+                            <StackPanel x:Name="NavGroupJmeterPanel" Margin="0,0,0,4">
+                                <Button x:Name="NavConvert" Style="{StaticResource NavButtonActiveStyle}" Click="NavConvert_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F4CA;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Convert Response Times" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="NavJTL" Style="{StaticResource NavButtonStyle}" Click="NavJTL_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F4C4;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="JTL File Processing" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="NavCompare" Style="{StaticResource NavButtonStyle}" Click="NavCompare_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x21C4;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Run Comparison" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
 
-                            <Button x:Name="NavJTL"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavJTL_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x1F4C4;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="JTL File Processing" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
+                            <!-- ── System Monitoring group ── -->
+                            <Rectangle Height="1" Fill="#1E2130" Margin="12,0"/>
+                            <Button Click="NavGroupSysmon_Click"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Background="Transparent" HorizontalContentAlignment="Left"
+                                    Padding="20,10,12,10" BorderThickness="0">
+                                <Grid Width="170">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="SYSTEM MONITORING"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="NavGroupSysmonChevron" Grid.Column="1" Text="▾"
+                                               FontSize="10" Foreground="#3D4D70" VerticalAlignment="Center"/>
+                                </Grid>
                             </Button>
+                            <StackPanel x:Name="NavGroupSysmonPanel" Margin="0,0,0,4">
+                                <Button x:Name="NavBLG" Style="{StaticResource NavButtonStyle}" Click="NavBLG_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F4C8;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="BLG File Conversion" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="NavNmon" Style="{StaticResource NavButtonStyle}" Click="NavNmon_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F5A5;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="nmon Analyzer" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
 
-                            <Button x:Name="NavCompare"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavCompare_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x21C4;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Run Comparison" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
+                            <!-- ── Run Scripts group ── -->
+                            <Rectangle Height="1" Fill="#1E2130" Margin="12,0"/>
+                            <Button Click="NavGroupScripts_Click"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Background="Transparent" HorizontalContentAlignment="Left"
+                                    Padding="20,10,12,10" BorderThickness="0">
+                                <Grid Width="170">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="RUN SCRIPTS"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="NavGroupScriptsChevron" Grid.Column="1" Text="▾"
+                                               FontSize="10" Foreground="#3D4D70" VerticalAlignment="Center"/>
+                                </Grid>
                             </Button>
-                        </StackPanel>
+                            <StackPanel x:Name="NavGroupScriptsPanel" Margin="0,0,0,4">
+                                <Button x:Name="NavScriptRunner" Style="{StaticResource NavButtonStyle}" Click="NavScriptRunner_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x25B6;" FontSize="13" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Script Runner" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
 
-                        <!-- ── System Monitoring group ── -->
-                        <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,8"/>
-
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="SYSTEM MONITORING"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="#6B7A99"
-                                   FontFamily="Segoe UI Variable, Segoe UI"
-                                   Margin="20,4,0,4"/>
-
-                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                            <Button x:Name="NavBLG"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavBLG_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x1F4C8;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="BLG File Conversion" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
+                            <!-- ── Automation Testing group ── -->
+                            <Rectangle Height="1" Fill="#1E2130" Margin="12,0"/>
+                            <Button Click="NavGroupAutomation_Click"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Background="Transparent" HorizontalContentAlignment="Left"
+                                    Padding="20,10,12,10" BorderThickness="0">
+                                <Grid Width="170">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="AUTOMATION TESTING"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="NavGroupAutomationChevron" Grid.Column="1" Text="▾"
+                                               FontSize="10" Foreground="#3D4D70" VerticalAlignment="Center"/>
+                                </Grid>
                             </Button>
-
-                            <Button x:Name="NavNmon"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavNmon_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x1F5A5;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="nmon Analyzer" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                            <StackPanel x:Name="NavGroupAutomationPanel" Margin="0,0,0,4">
+                                <StackPanel Orientation="Horizontal" Margin="26,6,12,2">
+                                    <TextBlock Text="&#x1F4C8;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#8B93A5"/>
+                                    <TextBlock Text="Test Run Trends" FontSize="13.5" Foreground="#8B93A5"
+                                               VerticalAlignment="Center" FontFamily="Segoe UI Variable, Segoe UI"/>
                                 </StackPanel>
+                                <Button x:Name="NavTrendsLocal" Style="{StaticResource NavButtonStyle}"
+                                        Click="NavTrendsLocal_Click" Padding="36,0,12,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F4C2;" FontSize="12" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Local" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="NavTrendsDB" Style="{StaticResource NavButtonStyle}"
+                                        Click="NavTrendsDB_Click" Padding="36,0,12,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F5C4;" FontSize="12" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="DB" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- ── AI Assistant group ── -->
+                            <Rectangle Height="1" Fill="#1E2130" Margin="12,0"/>
+                            <Button Click="NavGroupAi_Click"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Background="Transparent" HorizontalContentAlignment="Left"
+                                    Padding="20,10,12,10" BorderThickness="0">
+                                <Grid Width="170">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="AI ASSISTANT"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="NavGroupAiChevron" Grid.Column="1" Text="▾"
+                                               FontSize="10" Foreground="#3D4D70" VerticalAlignment="Center"/>
+                                </Grid>
                             </Button>
-                        </StackPanel>
+                            <StackPanel x:Name="NavGroupAiPanel" Margin="0,0,0,4">
+                                <Button x:Name="NavAiChat" Style="{StaticResource NavButtonStyle}" Click="NavAiChat_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F4AC;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="AI File Chat" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
 
-                        <!-- ── Run Scripts group ── -->
-                        <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,8"/>
-
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="RUN SCRIPTS"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="#6B7A99"
-                                   FontFamily="Segoe UI Variable, Segoe UI"
-                                   Margin="20,4,0,4"/>
-
-                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                            <Button x:Name="NavScriptRunner"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavScriptRunner_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x25B6;" FontSize="13" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Script Runner" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-
-                        <!-- ── Automation Testing group ── -->
-                        <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,8"/>
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="AUTOMATION TESTING"
-                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
-                                   FontFamily="Segoe UI Variable, Segoe UI" Margin="20,4,0,4"/>
-                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                            <Button x:Name="NavTestRunTrends"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavTestRunTrends_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x1F4C8;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Test Run Trends" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-
-                        <!-- ── AI Assistant ── -->
-                        <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E2130" Margin="12,8"/>
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="AI ASSISTANT"
-                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
-                                   FontFamily="Segoe UI Variable, Segoe UI" Margin="20,4,0,4"/>
-                        <StackPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                            <Button x:Name="NavAiChat"
-                                    Style="{StaticResource NavButtonStyle}"
-                                    Click="NavAiChat_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#x1F4AC;" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="AI File Chat" TextWrapping="Wrap" MaxWidth="130" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
 
                         <!-- ── Settings & Data ── -->
                         <StackPanel DockPanel.Dock="Bottom" Margin="12,0,12,10">
@@ -2413,13 +2569,13 @@
                         </ScrollViewer>
                     </Grid>
 
-                    <Grid x:Name="PageTestRunTrends" Visibility="Collapsed">
-                        <Grid Margin="36,28,36,28">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+
+                    <Grid x:Name="TrendsSubPageLocal" Visibility="Collapsed" Margin="36,28,36,28">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
                             <!-- Heading -->
                             <StackPanel Grid.Row="0" Margin="0,0,0,16">
@@ -2569,13 +2725,18 @@
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
 
-                                            <!-- Customer name + Fail window row -->
+                                            <!-- Customer name + Fail window + Max Months + Include old runs -->
                                             <Grid Grid.Row="0" Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="16"/>
-                                                    <ColumnDefinition Width="140"/>
+                                                    <ColumnDefinition Width="12"/>
+                                                    <ColumnDefinition Width="90"/>
+                                                    <ColumnDefinition Width="12"/>
+                                                    <ColumnDefinition Width="90"/>
+                                                    <ColumnDefinition Width="12"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
+                                                <!-- Customer Name -->
                                                 <StackPanel Grid.Column="0">
                                                     <TextBlock Text="CUSTOMER NAME"
                                                                FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
@@ -2586,34 +2747,65 @@
                                                              Padding="10,0" VerticalContentAlignment="Center"
                                                              FontFamily="Segoe UI Variable, Segoe UI"/>
                                                 </StackPanel>
+                                                <!-- Fail Window -->
                                                 <StackPanel Grid.Column="2">
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                                         <TextBlock Text="FAIL WINDOW"
                                                                    FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
-                                                                   FontFamily="Segoe UI Variable, Segoe UI"
-                                                                   VerticalAlignment="Center"/>
-                                                        <Border Width="15" Height="15" CornerRadius="8"
-                                                                Background="#1E2640" Margin="6,0,0,0"
-                                                                VerticalAlignment="Center" Cursor="Help">
+                                                                   FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                        <Border Width="15" Height="15" CornerRadius="8" Background="#1E2640"
+                                                                Margin="4,0,0,0" VerticalAlignment="Center" Cursor="Help">
                                                             <Border.ToolTip>
                                                                 <ToolTip MaxWidth="280">
                                                                     <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
-                                                                               Text="Number of most recent runs to count failures in column B. E.g. 3 means: how many times did this test fail in the last 3 runs? This value is saved per customer when you click + Add or Update Library."/>
+                                                                               Text="Number of most recent runs to count failures in column B."/>
                                                                 </ToolTip>
                                                             </Border.ToolTip>
-                                                            <TextBlock Text="i" FontSize="9" FontWeight="Bold"
-                                                                       Foreground="#60A5FA"
+                                                            <TextBlock Text="i" FontSize="9" FontWeight="Bold" Foreground="#60A5FA"
                                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
                                                     </StackPanel>
-                                                    <TextBox x:Name="TrendsFailWindowBox"
-                                                             Text="3"
+                                                    <TextBox x:Name="TrendsFailWindowBox" Text="3"
                                                              Background="#161B2A" Foreground="#CBD5E1"
                                                              BorderBrush="#252D42" FontSize="13" Height="34"
                                                              Padding="10,0" VerticalContentAlignment="Center"
-                                                             FontFamily="Consolas, Segoe UI Mono"
-                                                             TextAlignment="Center"
+                                                             FontFamily="Consolas, Segoe UI Mono" TextAlignment="Center"
                                                              TextChanged="TrendsField_Changed"/>
+                                                </StackPanel>
+                                                <!-- Max Months -->
+                                                <StackPanel Grid.Column="4">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                        <TextBlock Text="MAX MONTHS"
+                                                                   FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                                   FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                        <Border Width="15" Height="15" CornerRadius="8" Background="#1E2640"
+                                                                Margin="4,0,0,0" VerticalAlignment="Center" Cursor="Help">
+                                                            <Border.ToolTip>
+                                                                <ToolTip MaxWidth="260">
+                                                                    <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                               Text="Limit the number of runs included in the trends report. 0 = include all."/>
+                                                                </ToolTip>
+                                                            </Border.ToolTip>
+                                                            <TextBlock Text="i" FontSize="9" FontWeight="Bold" Foreground="#60A5FA"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBox x:Name="TrendsMaxMonthsBox" Text="0"
+                                                             Background="#161B2A" Foreground="#CBD5E1"
+                                                             BorderBrush="#252D42" FontSize="13" Height="34"
+                                                             Padding="10,0" VerticalContentAlignment="Center"
+                                                             FontFamily="Consolas, Segoe UI Mono" TextAlignment="Center"
+                                                             TextChanged="TrendsField_Changed"/>
+                                                </StackPanel>
+                                                <!-- Include Old Runs checkbox -->
+                                                <StackPanel Grid.Column="6" VerticalAlignment="Bottom">
+                                                    <CheckBox x:Name="TrendsIncludeOldRunsCheck"
+                                                              Foreground="#CBD5E1" FontSize="11"
+                                                              FontFamily="Segoe UI Variable, Segoe UI"
+                                                              VerticalAlignment="Center" Margin="0,0,0,8"
+                                                              ToolTip="When checked, all runs within a month are included (e.g. TST_MAY_25_1 and TST_MAY_25_2). When unchecked, only the latest run per month is kept.">
+                                                        <TextBlock TextWrapping="Wrap" MaxWidth="110" Text="Include old runs of a month" FontSize="10" Foreground="#8B93A5"/>
+                                                    </CheckBox>
                                                 </StackPanel>
                                             </Grid>
 
@@ -2787,10 +2979,557 @@
                                     </StackPanel>
                                 </Grid>
                             </Grid>
+                    </Grid>
+
+                    <Grid x:Name="TrendsSubPageDB" Visibility="Collapsed" Margin="36,28,36,28">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Heading -->
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Test Run Trends — Database"
+                                       FontSize="21" FontWeight="SemiBold" Foreground="#E2E8F0"
+                                       FontFamily="Segoe UI Variable, Segoe UI"/>
+                            <TextBlock Text="Fetch run files from the API, download them, then generate trends."
+                                       FontSize="12.5" Foreground="#7A8AA0"
+                                       FontFamily="Segoe UI Variable, Segoe UI"
+                                       Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <!-- Two-column body -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="260"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- LEFT: Customer Library -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Library header + Add button -->
+                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="CUSTOMER LIBRARY"
+                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                               VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                                        <!-- Row 1: utility buttons -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="&#x2191;"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#1E2640" Foreground="#6B7A99"
+                                                    FontSize="11" FontWeight="SemiBold"
+                                                    Width="24" Height="24" Margin="0,0,4,0"
+                                                    ToolTip="Export DB customer library to file"
+                                                    Click="DbTrendsLibraryExport_Click"/>
+                                            <Button Content="&#x2193;"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#1E2640" Foreground="#6B7A99"
+                                                    FontSize="11" FontWeight="SemiBold"
+                                                    Width="24" Height="24" Margin="0,0,4,0"
+                                                    ToolTip="Import DB customer library from file"
+                                                    Click="DbTrendsLibraryImport_Click"/>
+                                            <Button x:Name="DbTrendsGenerateAllBtn"
+                                                    Content="&#x26A1; Generate All"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#1E2640" Foreground="#34D399"
+                                                    FontSize="10" FontWeight="SemiBold"
+                                                    Height="24" Padding="8,0" Margin="0,0,4,0"
+                                                    ToolTip="Fetch, download and generate trends for all DB customers"
+                                                    Click="DbTrendsGenerateAll_Click"/>
+                                            <Button Content="+ Add"
+                                                    x:Name="DbTrendsLibraryAddBtn"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#1E2640" Foreground="#60A5FA"
+                                                    FontSize="10" FontWeight="SemiBold"
+                                                    Height="24" Padding="8,0"
+                                                    Click="DbTrendsLibraryAdd_Click"/>
+                                        </StackPanel>
+                                        <!-- Row 2: Watch All + Stop All -->
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="DbTrendsWatchAllBtn"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#1E2640" Foreground="#60A5FA"
+                                                    FontSize="10" FontWeight="SemiBold"
+                                                    Height="24" Padding="8,0" Margin="0,0,4,0"
+                                                    ToolTip="Auto-poll the API for all DB customers and regenerate when new runs appear"
+                                                    Click="DbTrendsWatchAll_Click">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#x1F441; Watch All" VerticalAlignment="Center"/>
+                                                    <TextBlock x:Name="DbTrendsWatchAllBadge"
+                                                               Visibility="Collapsed"
+                                                               Margin="4,0,0,0" VerticalAlignment="Center"
+                                                               FontSize="9" Foreground="#60A5FA"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="DbTrendsStopAllBtn"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#1E2640" Foreground="#6B7A99"
+                                                    FontSize="10" FontWeight="SemiBold"
+                                                    Height="24" Padding="8,0"
+                                                    ToolTip="Stop all DB watchers"
+                                                    IsEnabled="False"
+                                                    Click="DbTrendsStopAll_Click">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="⏹ Stop All" VerticalAlignment="Center"/>
+                                                    <TextBlock x:Name="DbTrendsStopAllBadge"
+                                                               Visibility="Collapsed"
+                                                               Margin="4,0,0,0" VerticalAlignment="Center"
+                                                               FontSize="9" Foreground="#4ADE80"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Library list -->
+                                <Border Grid.Row="1" Background="#0A0D18" BorderBrush="#1A2030"
+                                        BorderThickness="1" CornerRadius="8" Padding="4">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="DbTrendsLibraryPanel"/>
+                                    </ScrollViewer>
+                                </Border>
+                                <TextBlock Grid.Row="1"
+                                           x:Name="DbTrendsLibraryEmptyLabel"
+                                           Text="No customers yet.&#x0a;Click + Add to configure&#x0a;your first customer."
+                                           Foreground="#3D4D70" FontSize="11.5"
+                                           FontFamily="Segoe UI Variable, Segoe UI"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           IsHitTestVisible="False"/>
+                            </Grid>
+
+                            <!-- RIGHT: Config + Log -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Config panel -->
+                                <Border Grid.Row="0" Background="#0D1020" BorderBrush="#1A2030"
+                                        BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Row 0: Customer Name + Fail Window + Max Months + Include Old Runs -->
+                                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Customer Name -->
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="CUSTOMER NAME"
+                                                           FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                <TextBox x:Name="DbTrendsCustomerNameBox"
+                                                         TextChanged="DbTrendsField_Changed"
+                                                         Background="#161B2A" Foreground="#CBD5E1"
+                                                         BorderBrush="#252D42" FontSize="13" Height="34"
+                                                         Padding="10,0" VerticalContentAlignment="Center"
+                                                         FontFamily="Segoe UI Variable, Segoe UI"/>
+                                            </StackPanel>
+                                            <!-- Fail Window -->
+                                            <StackPanel Grid.Column="2">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="FAIL WINDOW"
+                                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                    <Border Width="15" Height="15" CornerRadius="8" Background="#1E2640"
+                                                            Margin="4,0,0,0" VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="280">
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                           Text="Number of most recent runs to count failures in column B. E.g. 3 means: how many times did this test fail in the last 3 runs?"/>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="9" FontWeight="Bold" Foreground="#60A5FA"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBox x:Name="DbTrendsFailWindowBox" Text="3"
+                                                         Background="#161B2A" Foreground="#CBD5E1"
+                                                         BorderBrush="#252D42" FontSize="13" Height="34"
+                                                         Padding="10,0" VerticalContentAlignment="Center"
+                                                         FontFamily="Consolas, Segoe UI Mono" TextAlignment="Center"
+                                                         TextChanged="DbTrendsField_Changed"/>
+                                            </StackPanel>
+                                            <!-- Max Months -->
+                                            <StackPanel Grid.Column="4">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="MAX MONTHS"
+                                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                               FontFamily="Segoe UI Variable, Segoe UI" VerticalAlignment="Center"/>
+                                                    <Border Width="15" Height="15" CornerRadius="8" Background="#1E2640"
+                                                            Margin="4,0,0,0" VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="260">
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                           Text="Limit the number of runs included. 0 = include all."/>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="9" FontWeight="Bold" Foreground="#60A5FA"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBox x:Name="DbTrendsMaxMonthsBox" Text="0"
+                                                         Background="#161B2A" Foreground="#CBD5E1"
+                                                         BorderBrush="#252D42" FontSize="13" Height="34"
+                                                         Padding="10,0" VerticalContentAlignment="Center"
+                                                         FontFamily="Consolas, Segoe UI Mono" TextAlignment="Center"
+                                                         TextChanged="DbTrendsField_Changed"/>
+                                            </StackPanel>
+                                            <!-- Include Old Runs checkbox -->
+                                            <StackPanel Grid.Column="6" VerticalAlignment="Bottom">
+                                                <CheckBox x:Name="DbTrendsIncludeOldRunsCheck"
+                                                          Foreground="#CBD5E1" FontSize="11"
+                                                          FontFamily="Segoe UI Variable, Segoe UI"
+                                                          VerticalAlignment="Center" Margin="0,0,0,8"
+                                                          ToolTip="When checked, all runs within a month are included. When unchecked, only the latest run per month is kept.">
+                                                    <TextBlock TextWrapping="Wrap" MaxWidth="110" Text="Include old runs of a month" FontSize="10" Foreground="#8B93A5"/>
+                                                </CheckBox>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Row 1: API Host + API Key -->
+                                        <Grid Grid.Row="1" Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="16"/>
+                                                <ColumnDefinition Width="200"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="API HOST"
+                                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                                               VerticalAlignment="Center"/>
+                                                    <Border Width="15" Height="15" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="320">
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                           Text="Base host of the API server. E.g. http://apso1wats4:8080&#x0a;&#x0a;Fetch URL (auto-built): {host}/spring/runNumber/getRunNumberByProjectName?projectName={customer}&#x0a;Download URL (per run): {host}/spring/export-to-excel?projectName={customer}&amp;runNumber={run}&amp;result=final"/>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                   Foreground="#60A5FA"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox x:Name="DbTrendsApiHostBox"
+                                                              Grid.Column="0"
+                                                              IsEditable="True"
+                                                              Style="{StaticResource DarkComboBoxEditableStyle}"
+                                                              Background="#161B2A" Foreground="#CBD5E1"
+                                                              BorderBrush="#252D42" FontSize="12" Height="34"
+                                                              Padding="6,0" VerticalContentAlignment="Center"
+                                                              FontFamily="Consolas, Segoe UI Mono"
+                                                              SelectionChanged="DbTrendsApiHost_SelectionChanged"/>
+                                                    <Button Grid.Column="1"
+                                                            Content="+ Save Host"
+                                                            x:Name="DbTrendsApiHostSaveBtn"
+                                                            Style="{StaticResource ActionButtonStyle}"
+                                                            Background="#1E2640" Foreground="#34D399"
+                                                            FontSize="10" FontWeight="SemiBold"
+                                                            Height="34" Padding="8,0" Margin="6,0,0,0"
+                                                            ToolTip="Save this host to the dropdown list"
+                                                            Click="DbTrendsApiHostSave_Click"/>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="API KEY"
+                                                           FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                <PasswordBox x:Name="DbTrendsApiKeyBox"
+                                                             Background="#161B2A" Foreground="#CBD5E1"
+                                                             BorderBrush="#252D42" FontSize="12" Height="34"
+                                                             Padding="10,0"
+                                                             FontFamily="Consolas, Segoe UI Mono"
+                                                             PasswordChanged="DbTrendsApiKey_Changed"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Row 1b: Auto-generated URL previews -->
+                                        <Grid Grid.Row="2" Margin="0,-6,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="16"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Fetch URL -->
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="FETCH URL (auto-generated)"
+                                                           FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                <Border Background="#0A0D18" BorderBrush="#1A2030"
+                                                        BorderThickness="1" CornerRadius="6" Height="28" Padding="8,0">
+                                                    <TextBlock x:Name="DbTrendsFetchUrlPreview"
+                                                               Text="—"
+                                                               Foreground="#4A5F88" FontSize="10.5"
+                                                               FontFamily="Consolas, Segoe UI Mono"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Border>
+                                            </StackPanel>
+                                            <!-- Download URL -->
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="DOWNLOAD URL (auto-generated, per run)"
+                                                           FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                           FontFamily="Segoe UI Variable, Segoe UI" Margin="0,0,0,4"/>
+                                                <Border Background="#0A0D18" BorderBrush="#1A2030"
+                                                        BorderThickness="1" CornerRadius="6" Height="28" Padding="8,0">
+                                                    <TextBlock x:Name="DbTrendsDownloadUrlPreview"
+                                                               Text="—"
+                                                               Foreground="#4A5F88" FontSize="10.5"
+                                                               FontFamily="Consolas, Segoe UI Mono"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Row 3: Download folder + Reports folder -->
+                                        <Grid Grid.Row="3" Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="16"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Download folder -->
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="DOWNLOAD FOLDER"
+                                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                                               VerticalAlignment="Center"/>
+                                                    <Border Width="15" Height="15" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="260">
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                           Text="Folder where run files fetched from the API will be downloaded and stored locally before trend generation."/>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                   Foreground="#60A5FA"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                                            BorderThickness="1" CornerRadius="6" Height="32">
+                                                        <TextBlock x:Name="DbTrendsDownloadFolderLabel"
+                                                                   Text="Not set"
+                                                                   Foreground="#4A5F88" FontSize="11"
+                                                                   FontFamily="Consolas, Segoe UI Mono"
+                                                                   VerticalAlignment="Center" Padding="8,0"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </Border>
+                                                    <Button Grid.Column="1" Content="…"
+                                                            Style="{StaticResource ActionButtonStyle}"
+                                                            Background="#374151" Foreground="#B0BAC8"
+                                                            Width="32" Height="32" Margin="6,0,0,0"
+                                                            Click="DbTrendsDownloadFolderBrowse_Click"/>
+                                                </Grid>
+                                            </StackPanel>
+
+                                            <!-- Reports folder -->
+                                            <StackPanel Grid.Column="2">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <TextBlock Text="REPORTS FOLDER"
+                                                               FontSize="10" FontWeight="Bold" Foreground="#6B7A99"
+                                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                                               VerticalAlignment="Center"/>
+                                                    <Border Width="15" Height="15" CornerRadius="8"
+                                                            Background="#1E2640" Margin="6,0,0,0"
+                                                            VerticalAlignment="Center" Cursor="Help">
+                                                        <Border.ToolTip>
+                                                            <ToolTip MaxWidth="260">
+                                                                <TextBlock TextWrapping="Wrap" FontSize="11.5" Foreground="#CBD5E1"
+                                                                           Text="Folder where CustomerName_Trends.xlsx will be saved. Defaults to Download folder if left blank."/>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
+                                                        <TextBlock Text="i" FontSize="9" FontWeight="Bold"
+                                                                   Foreground="#60A5FA"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Background="#161B2A" BorderBrush="#252D42"
+                                                            BorderThickness="1" CornerRadius="6" Height="32">
+                                                        <TextBlock x:Name="DbTrendsReportsFolderLabel"
+                                                                   Text="Same as Download folder"
+                                                                   Foreground="#4A5F88" FontSize="11"
+                                                                   FontFamily="Consolas, Segoe UI Mono"
+                                                                   VerticalAlignment="Center" Padding="8,0"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </Border>
+                                                    <Button Grid.Column="1" Content="…"
+                                                            Style="{StaticResource ActionButtonStyle}"
+                                                            Background="#374151" Foreground="#B0BAC8"
+                                                            Width="32" Height="32" Margin="6,0,0,0"
+                                                            Click="DbTrendsReportsFolderBrowse_Click"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Row 4: Runs found hint -->
+                                        <TextBlock Grid.Row="4"
+                                                   x:Name="DbTrendsRunsFoundLabel"
+                                                   Text="" Foreground="#4A5F88" FontSize="11"
+                                                   FontFamily="Segoe UI Variable, Segoe UI"
+                                                   Margin="0,0,0,0"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Log panel -->
+                                <Border Grid.Row="1" Background="#060810" BorderBrush="#1A2030"
+                                        BorderThickness="1" CornerRadius="8" Padding="12,10"
+                                        Visibility="Collapsed" x:Name="DbTrendsLogPanel">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <ProgressBar x:Name="DbTrendsProgress" Height="3"
+                                                     Background="#1A2030" Foreground="#2563EB"
+                                                     BorderThickness="0" IsIndeterminate="True" Margin="0,0,0,6"/>
+                                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                            <TextBlock x:Name="DbTrendsLog" Text=""
+                                                       Foreground="#A8B3C8" FontSize="11.5"
+                                                       FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                                       TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Action button row -->
+                                <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!-- Step 1: Fetch runs from API -->
+                                        <Button x:Name="DbTrendsFetchRunsBtn"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#1E2640" Foreground="#60A5FA"
+                                                FontSize="13" FontWeight="SemiBold"
+                                                Height="42" Padding="14,0" Margin="0,0,10,0"
+                                                ToolTip="Call the API to retrieve the list of run numbers for this customer"
+                                                Click="DbTrendsFetchRuns_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#x1F50D;" FontSize="13" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Fetch Runs" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <!-- Step 2: Download files -->
+                                        <Button x:Name="DbTrendsDownloadBtn"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#1E2640" Foreground="#A78BFA"
+                                                FontSize="13" FontWeight="SemiBold"
+                                                Height="42" Padding="14,0" Margin="0,0,10,0"
+                                                IsEnabled="False"
+                                                ToolTip="Download the run files returned by the API into the Download folder"
+                                                Click="DbTrendsDownload_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#x2B07;" FontSize="13" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Download Files" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <!-- Step 3: Generate trends -->
+                                        <Button x:Name="DbTrendsRunBtn"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#2563EB" Foreground="White"
+                                                FontSize="13" FontWeight="SemiBold"
+                                                Height="42" Padding="14,0" Margin="0,0,10,0"
+                                                IsEnabled="False"
+                                                ToolTip="Generate the trends Excel from the downloaded run files"
+                                                Click="DbTrendsRun_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#x1F4C8;" FontSize="13" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Generate Trends" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <!-- Save to library -->
+                                        <Button x:Name="DbTrendsUpdateLibraryBtn"
+                                                Content="💾 Update Library"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#78350F" Foreground="#FCD34D"
+                                                FontSize="13" FontWeight="SemiBold"
+                                                Height="42" Padding="12,0"
+                                                Visibility="Collapsed"
+                                                ToolTip="Save changes to this library entry"
+                                                Click="DbTrendsUpdateLibrary_Click"/>
+                                        <!-- Auto-Watch toggle -->
+                                        <Button x:Name="DbTrendsWatchToggleBtn"
+                                                Style="{StaticResource ActionButtonStyle}"
+                                                Background="#1E2640" Foreground="#60A5FA"
+                                                FontSize="13" FontWeight="SemiBold"
+                                                Height="42" Padding="14,0" Margin="10,0,0,0"
+                                                ToolTip="Automatically poll the API and regenerate trends when a new run appears"
+                                                Click="DbTrendsWatchToggle_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#x1F441; Auto-Watch" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!-- Status text -->
+                                    <TextBlock x:Name="DbTrendsStatusLabel"
+                                               Text="" Foreground="#7A8AA0" FontSize="12"
+                                               FontFamily="Segoe UI Variable, Segoe UI"
+                                               Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    <!-- Watch status -->
+                                    <TextBlock x:Name="DbTrendsWatchStatusLabel"
+                                               Text="" Foreground="#4A5F88" FontSize="11"
+                                               FontFamily="Consolas, Segoe UI Mono, Segoe UI"
+                                               Margin="0,3,0,0" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Grid>
                         </Grid>
                     </Grid>
 
-                    <!-- ══════════════════════════════════════════════════════ -->
                     <!-- AI File Chat page                                     -->
                     <!-- ══════════════════════════════════════════════════════ -->
                     <Grid x:Name="PageAiChat" Visibility="Collapsed">
